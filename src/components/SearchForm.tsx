@@ -290,13 +290,13 @@ export default function SearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-4 rounded-xl border border-zinc-200/50 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-[#272729] sm:gap-5 sm:p-5"
+      className="flex flex-col gap-3 rounded-xl border border-zinc-200/50 bg-white p-3.5 shadow-xs dark:border-zinc-800 dark:bg-[#272729] sm:gap-3.5 sm:p-4"
     >
       {/* City search input */}
       <div ref={cityContainerRef} className="relative">
         <label
           htmlFor={cityInputRef.current?.id || cityInputId}
-          className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1.5"
+          className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1"
         >
           Adresse, ville ou code postal
         </label>
@@ -388,7 +388,7 @@ export default function SearchForm({
       <div>
         <label
           htmlFor={radiusInputId}
-          className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 block mb-2"
+          className="text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 block mb-1"
         >
           Rayon de recherche
         </label>
@@ -399,7 +399,7 @@ export default function SearchForm({
             value={radiusInputString}
             onChange={handleRadiusInputChange}
             onBlur={handleRadiusInputBlur}
-            className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:ring-zinc-400"
+            className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:ring-zinc-600"
             placeholder="Ex: 1,2 ou 10 ou 57"
           />
           <span className="absolute right-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase pointer-events-none select-none">
@@ -408,8 +408,8 @@ export default function SearchForm({
         </div>
         
         {/* Clean, minimal fast distance filters */}
-        <div className="mt-2.5">
-          <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
+        <div className="mt-1.5">
+          <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-1">
             Filtres rapides
           </span>
           <div className="flex flex-wrap items-center gap-2 select-none">
@@ -424,7 +424,7 @@ export default function SearchForm({
                     setRadiusInputString(val.toString());
                     if (onRadiusChange) onRadiusChange(val);
                   }}
-                  className={`min-h-9 cursor-pointer rounded-lg border px-3.5 py-2 text-[11px] font-bold transition-all active:scale-95 ${
+                  className={`min-h-8 cursor-pointer rounded-lg border px-2.5 py-1 text-[10px] font-bold transition-all active:scale-95 ${
                     isActive
                       ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100"
                       : "bg-zinc-50/50 hover:bg-zinc-100 text-zinc-500 border-zinc-200/40 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 dark:text-zinc-400 dark:border-zinc-800/60"
@@ -445,9 +445,8 @@ export default function SearchForm({
       />
 
       <NafCodeSelector value={nafCodeState} onChange={setNafCodeState} />
-
       {/* Active Only Filter Switch */}
-      <div className="flex items-center justify-between p-3.5 bg-zinc-50 border border-zinc-200/50 rounded-lg dark:bg-zinc-900/10 dark:border-zinc-900">
+      <div className="flex items-center justify-between py-2 px-3 bg-zinc-50 border border-zinc-200/50 rounded-lg dark:bg-zinc-900/10 dark:border-zinc-900">
         <div className="flex flex-col gap-0.5 select-none">
           <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
             Établissements actifs uniquement
@@ -469,7 +468,7 @@ export default function SearchForm({
 
       {/* Job Title Assistant — collapsed on mobile to reduce cognitive load */}
       <details className="rounded-xl border border-zinc-200/50 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-900/10">
-        <summary className="cursor-pointer list-none px-3.5 py-3 text-xs font-bold text-zinc-600 dark:text-zinc-300 [&::-webkit-details-marker]:hidden">
+        <summary className="cursor-pointer list-none px-3 py-1.5 text-xs font-bold text-zinc-600 dark:text-zinc-300 [&::-webkit-details-marker]:hidden">
           <span className="flex items-center justify-between gap-2">
             Assistant métier (optionnel)
             <span className="text-zinc-400" aria-hidden>▼</span>
@@ -542,7 +541,7 @@ export default function SearchForm({
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-900/60 dark:disabled:text-zinc-600 sm:py-4 sm:text-lg"
+        className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 py-2.5 text-sm font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-900/60 dark:disabled:text-zinc-600 sm:py-3 sm:text-base"
       >
         {loading ? (
           <>

@@ -61,12 +61,14 @@ function PlaceholderPanel({
   title,
   description,
   loading = false,
-  variant = "default"
+  variant = "default",
+  className = ""
 }: {
   title: string;
   description?: string;
   loading?: boolean;
   variant?: "default" | "error";
+  className?: string;
 }) {
   if (loading) {
     return (
@@ -80,7 +82,7 @@ function PlaceholderPanel({
       : "border-zinc-200/80 bg-white dark:border-zinc-800/80 dark:bg-[#18181b]";
 
   return (
-    <div className={`rounded-xl border p-8 text-center ${borderClass}`}>
+    <div className={`rounded-xl border p-5 sm:p-6 text-center ${borderClass} ${className}`}>
       <p
         className={`text-sm font-semibold ${
           variant === "error" ? "text-rose-800 dark:text-rose-300" : "text-zinc-800 dark:text-zinc-200"
@@ -89,7 +91,7 @@ function PlaceholderPanel({
         {title}
       </p>
       {description && (
-        <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+        <p className="mx-auto mt-2.5 max-w-sm text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
           {description}
         </p>
       )}
@@ -212,6 +214,7 @@ export default function SearchResults({
       <PlaceholderPanel
         title="Découvrez des établissements à proximité"
         description="Saisissez une ville, sélectionnez vos secteurs d'activité, puis lancez la recherche. Vous pouvez aussi cliquer sur la carte pour cibler une zone."
+        className="flex-1 flex flex-col justify-center"
       />
     );
   }

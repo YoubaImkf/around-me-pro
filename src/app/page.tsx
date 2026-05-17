@@ -81,6 +81,8 @@ export default function Home() {
   const [mapCenter, setMapCenter] = useState<[number, number]>([48.8566, 2.3522]);
   const [selectedSiret, setSelectedSiret] = useState<string | null>(null);
   const [customCenter, setCustomCenter] = useState<[number, number] | null>(null);
+  const [lastTextCity, setLastTextCity] = useState("");
+  const [isFullscreenMap, setIsFullscreenMap] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [hasSearched, setHasSearched] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("search");
@@ -113,6 +115,16 @@ export default function Home() {
 
     return () => window.removeEventListener("unhandledrejection", handleUnhandledRejection);
   }, []);
+
+  useEffect(() => {
+    // Trigger map resize recalculation when fullscreen toggles
+    const timer = setTimeout(() => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("resize"));
+      }
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isFullscreenMap]);
 
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
@@ -151,6 +163,9 @@ export default function Home() {
       activeNafCode: string = nafCode,
       activePerPage: PageSizeOption = perPage
     ) => {
+      if (!activeCustomCenter && city.startsWith("📍")) {
+        return;
+      }
       setHasSearched(true);
       setLoading(true);
       setError(null);
@@ -191,6 +206,7 @@ export default function Home() {
         } else {
           setMapCenter([data.city.latitude, data.city.longitude]);
           setCurrentCity(data.city.name);
+          setLastTextCity(data.city.name);
         }
         setCurrentRadius(data.city.radius);
 
@@ -277,8 +293,15 @@ export default function Home() {
           coordinates={customCenter}
           onReset={() => {
             setCustomCenter(null);
-            if (currentCity) {
-              executeSearch(currentCity, currentRadius, selectedCategoryIds, 1, null);
+            if (lastTextCity) {
+              setCurrentCity(lastTextCity);
+              executeSearch(lastTextCity, currentRadius, selectedCategoryIds, 1, null);
+            } else {
+              setHasSearched(false);
+              setCurrentCity("");
+              setCompanies([]);
+              setEstablishments([]);
+              setPagination(defaultPagination);
             }
           }}
         />
@@ -304,7 +327,15 @@ export default function Home() {
   );
 
   const mapPanel = (
-    <div className={`flex-1 w-full flex flex-col relative z-0 ${mobileView === "map" ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))]" : "h-[350px] sm:h-[450px]"} lg:!h-full lg:min-h-0`}>
+    <div className={`flex-1 w-full flex flex-col relative z-0 ${
+      mobileView === "map" 
+        ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))]" 
+        : "h-[350px] sm:h-[450px]"
+    } lg:!h-full lg:min-h-0 ${
+      isFullscreenMap 
+        ? "rounded-none" 
+        : "rounded-xl overflow-hidden border border-zinc-200/50 dark:border-zinc-800/50 shadow-sm"
+    }`}>
       <Map
         center={mapCenter}
         radius={currentRadius}
@@ -315,23 +346,47 @@ export default function Home() {
         customCenter={customCenter}
         theme={theme}
         isVisible={mobileView === "map" || (typeof window !== "undefined" && window.innerWidth >= 1024)}
+        isFullscreen={isFullscreenMap}
       />
+
+      {/* Floating Fullscreen Toggle Button - Desktop Only */}
+      <button
+        type="button"
+        onClick={() => setIsFullscreenMap(!isFullscreenMap)}
+        aria-label={isFullscreenMap ? "Mode normal" : "Mode plein écran"}
+        title={isFullscreenMap ? "Mode normal" : "Mode plein écran"}
+        className="hidden lg:flex absolute right-3.5 top-3.5 z-[500] h-9 w-9 cursor-pointer items-center justify-center rounded-xl border-0 bg-white text-zinc-700 shadow-md hover:bg-zinc-50 hover:text-zinc-950 active:scale-95 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white transition-all"
+      >
+        {isFullscreenMap ? (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 3.75v5.25m0 0H3.75M9 9L3.75 3.75M9 20.25v-5.25m0 0H3.75M9 15l-5.25 5.25M15 3.75v5.25m0 0h5.25M15 9l5.25-5.25M15 20.25v-5.25m0 0h5.25M15 15l5.25 5.25" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-4 w-4">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9V3.75m0 0h5.25m-5.25 0L9 9M3.75 15v5.25m0 0h5.25m-5.25 0L9 15M20.25 9V3.75m0 0h-5.25m5.25 0L15 9M20.25 15v5.25m0 0h-5.25m5.25 0l-5.25-5.25" />
+          </svg>
+        )}
+      </button>
     </div>
   );
 
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#fafafa] dark:bg-[#09090b]">
-      <AppHeader
-        theme={theme}
-        onToggleTheme={toggleTheme}
-        hasSearched={hasSearched}
-        resultCount={pagination.totalEstablishments}
-      />
+      {!isFullscreenMap && (
+        <AppHeader
+          theme={theme}
+          onToggleTheme={toggleTheme}
+          hasSearched={hasSearched}
+          resultCount={pagination.totalEstablishments}
+        />
+      )}
 
       <main 
-        className={`app-main-mobile mx-auto flex w-full max-w-[1440px] flex-1 flex-col lg:grid lg:grid-cols-12 lg:items-start lg:gap-5 lg:px-6 lg:py-5 ${
-          mobileView === "map" ? "p-0" : "px-4 py-3 sm:px-5 sm:py-4"
-        }`}
+        className={`app-main-mobile mx-auto flex w-full max-w-[1440px] flex-1 flex-col relative ${
+          isFullscreenMap 
+            ? "lg:block lg:max-w-none lg:h-dvh lg:w-screen lg:p-0 lg:overflow-hidden" 
+            : "lg:grid lg:grid-cols-12 lg:items-start lg:gap-3 lg:px-6 lg:py-5"
+        } ${mobileView === "map" ? "p-0" : "px-4 py-3 sm:px-5 sm:py-4"}`}
       >
         {/* Mobile: single active panel */}
         <div className={`flex flex-col lg:hidden ${mobileView === "map" ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))] gap-0 w-full" : "gap-3"}`}>
@@ -341,17 +396,29 @@ export default function Home() {
         </div>
 
         {/* Desktop: sidebar + map */}
-        <div className="hidden lg:col-span-5 lg:flex lg:max-h-[calc(100dvh-var(--header-height)-6rem)] lg:flex-col lg:gap-4 lg:overflow-y-auto lg:pb-6 lg:pr-1 custom-scrollbar">
+        <div 
+          className={
+            isFullscreenMap
+              ? "hidden lg:flex lg:flex-col lg:gap-3 lg:absolute lg:left-0 lg:top-0 lg:z-10 lg:w-[420px] lg:h-dvh lg:overflow-y-auto lg:pb-4 lg:pr-1 custom-scrollbar bg-white/95 dark:bg-[#09090b]/95 p-4 border-r border-zinc-200/80 dark:border-zinc-800/80 shadow-2xl backdrop-blur-md"
+              : "hidden lg:col-span-5 lg:flex lg:h-[calc(100dvh-var(--header-height)-6rem)] lg:flex-col lg:gap-3 lg:overflow-y-auto lg:pb-4 lg:pr-1 custom-scrollbar"
+          }
+        >
           {searchPanel}
           {resultsPanel}
         </div>
 
-        <div className="hidden lg:col-span-7 lg:block lg:h-[calc(100dvh-var(--header-height)-6rem)] lg:sticky lg:top-[calc(var(--header-height)+1.25rem)]">
+        <div 
+          className={
+            isFullscreenMap
+              ? "hidden lg:block lg:h-dvh lg:w-full"
+              : "hidden lg:col-span-7 lg:block lg:h-[calc(100dvh-var(--header-height)-6rem)] lg:sticky lg:top-[calc(var(--header-height)+1.25rem)]"
+          }
+        >
           {mapPanel}
         </div>
       </main>
 
-      <AppFooter />
+      {!isFullscreenMap && <AppFooter />}
 
       <MobileTabBar
         activeView={mobileView}

@@ -18,6 +18,7 @@ interface MapProps {
   theme: "light" | "dark";
   /** When false (hidden tab), skip resize work until visible again */
   isVisible?: boolean;
+  isFullscreen?: boolean;
 }
 
 // Beautiful custom modern SVG marker icon builder
@@ -64,7 +65,8 @@ export default function InteractiveMap({
   onMapClick,
   customCenter,
   theme,
-  isVisible = true
+  isVisible = true,
+  isFullscreen = false
 }: MapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
@@ -340,7 +342,11 @@ export default function InteractiveMap({
       <div ref={mapContainerRef} className="z-0 flex-1 w-full min-h-0" />
       
       {/* Visual floating helper card for zoom/scale info */}
-      <div className="absolute top-3.5 left-3.5 z-10 pointer-events-none hidden sm:flex flex-col gap-1.5 px-3 py-2.5 bg-white/90 backdrop-blur-md border border-zinc-200/50 rounded-lg shadow-sm text-[10px] font-bold text-zinc-800 dark:bg-[#272729]/90 dark:border-zinc-800 dark:text-zinc-200">
+      <div className={`absolute top-3.5 z-10 pointer-events-none hidden sm:flex flex-col gap-1.5 px-3 py-2.5 bg-white/90 backdrop-blur-md border border-zinc-200/50 rounded-lg shadow-sm text-[10px] font-bold text-zinc-800 dark:bg-[#272729]/90 dark:border-zinc-800 dark:text-zinc-200 transition-all duration-300 ${
+        isFullscreen 
+          ? "left-[440px]" 
+          : "left-3.5"
+      }`}>
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 bg-zinc-900 dark:bg-zinc-100 rounded-full animate-pulse" />
           <span>Zone active</span>
