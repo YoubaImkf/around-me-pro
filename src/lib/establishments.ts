@@ -1,4 +1,5 @@
 import { getCategoryBySection } from "@/lib/categories";
+import { annuaireEtablissementUrl } from "@/lib/etablissementNormalize";
 import { Company, Etablissement } from "@/types/company";
 
 export interface EstablishmentRow {
@@ -25,32 +26,34 @@ export function sortEstablishmentRows(rows: EstablishmentRow[]): EstablishmentRo
   });
 }
 
-/** Primary display name: trade name / branch context, not siège framing. */
-export function getEstablishmentDisplayName(company: Company, etab: Etablissement): string {
-  if (etab.enseigne?.trim()) {
-    return etab.enseigne.trim();
-  }
-  if (!etab.estSiege && etab.commune) {
-    return `${company.nomComplet} — ${etab.commune}`;
-  }
-  return company.nomComplet;
+/** Primary title: establishment name, never "Company — City" when we have a real trade name. */
+export function getEstablishmentDisplayName(_company: Company, etab: Etablissement): string {
+  return etab.nomEtablissement?.trim() || etab.enseigne?.trim() || "Établissement";
 }
 
-export function getActivityLabel(company: Company): string {
-  if (company.libelleNaf?.trim()) {
-    return company.libelleNaf.trim();
+export function getActivityLabel(etab: Etablissement, company?: Company): string {
+  const code = etab.codeNaf || company?.codeNaf;
+  const libelle = etab.libelleNaf?.trim();
+
+  if (code && libelle) {
+    return `${code} · ${libelle}`;
   }
-  const category = getCategoryBySection(company.secteur);
-  const naf = company.codeNaf && company.codeNaf !== "Inconnu" ? company.codeNaf : "";
-  if (naf && category?.label) {
-    return `${naf} · ${category.label}`;
+  if (libelle) return libelle;
+  if (code && code !== "Inconnu") {
+    const category = company ? getCategoryBySection(company.secteur) : undefined;
+    if (category?.label) return `${code} · ${category.label}`;
+    return code;
   }
-  return category?.label || naf || "Activité non renseignée";
+  if (company) {
+    const category = getCategoryBySection(company.secteur);
+    return category?.label || "Activité non renseignée";
+  }
+  return "Activité non renseignée";
 }
 
+/** DINUM `adresse` is already the full postal address — do not append CP/ville again. */
 export function formatAddress(etab: Etablissement): string {
-  const parts = [etab.adresse, `${etab.codePostal} ${etab.commune}`.trim()].filter(Boolean);
-  return parts.join(", ");
+  return etab.adresse?.trim() || `${etab.codePostal} ${etab.commune}`.trim();
 }
 
 export function hasContactInfo(etab: Etablissement): boolean {
@@ -78,35 +81,33 @@ export interface ExportRow {
   "Taille d'effectif": string;
   "Distance (km)": number | string;
   "Lien Google Maps": string;
-  "Fiche administrative": string;
+  "Fiche établissement": string;
 }
 
 export function toExportRow(
   { company, etab }: EstablishmentRow,
   index: number
 ): ExportRow {
-  const category = getCategoryBySection(company.secteur);
-  const mapsQuery = encodeURIComponent(
-    `${getEstablishmentDisplayName(company, etab)} ${formatAddress(etab)}`
-  );
+  const displayName = getEstablishmentDisplayName(company, etab);
+  const mapsQuery = encodeURIComponent(`${displayName} ${formatAddress(etab)}`);
 
   return {
     Index: index + 1,
-    "Nom de l'établissement": getEstablishmentDisplayName(company, etab),
+    "Nom de l'établissement": displayName,
     "Raison sociale": company.nomComplet,
     SIRET: etab.siret,
     SIREN: company.siren,
     "Type d'établissement": etab.estSiege ? "Siège social" : "Établissement",
     Statut: etab.statut,
-    Adresse: etab.adresse,
+    Adresse: formatAddress(etab),
     "Code postal": etab.codePostal,
     Ville: etab.commune,
-    Activité: getActivityLabel(company),
-    "Code NAF": company.codeNaf,
-    "Taille d'effectif": company.effectifSalarie,
+    Activité: getActivityLabel(etab, company),
+    "Code NAF": etab.codeNaf,
+    "Taille d'effectif": etab.effectifSalarie,
     "Distance (km)": etab.distance ?? "",
     "Lien Google Maps": `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`,
-    "Fiche administrative": `https://annuaire-entreprises.data.gouv.fr/entreprise/${company.siren}`
+    "Fiche établissement": annuaireEtablissementUrl(etab.siret)
   };
 }
 
@@ -126,5 +127,5 @@ export const EXPORT_COLUMNS = [
   { header: "Taille d'effectif", key: "Taille d'effectif" },
   { header: "Distance (km)", key: "Distance (km)" },
   { header: "Lien Google Maps", key: "Lien Google Maps" },
-  { header: "Fiche administrative", key: "Fiche administrative" }
+  { header: "Fiche établissement", key: "Fiche établissement" }
 ] as const;

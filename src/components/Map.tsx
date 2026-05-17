@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { getCategoryBySection } from "@/lib/categories";
-import { getEstablishmentDisplayName } from "@/lib/establishments";
+import { formatAddress, getActivityLabel, getEstablishmentDisplayName } from "@/lib/establishments";
 import { Company, Etablissement } from "@/types/company";
 
 interface MapProps {
@@ -222,15 +222,15 @@ export default function InteractiveMap({
                 ? `<span class="px-1.5 py-0.5 bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 text-[10px] font-bold rounded border border-rose-100 dark:border-rose-900/30">Fermé</span>`
                 : `<span class="px-1.5 py-0.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 text-[10px] font-bold rounded border border-emerald-100 dark:border-emerald-900/30">Actif</span>`}
             </div>
-            <h4 class="text-xs font-black text-zinc-950 dark:text-zinc-50 leading-tight mb-1">
+            <h4 class="text-xs font-black text-zinc-950 dark:text-zinc-50 leading-tight mb-0.5">
               ${displayName}
             </h4>
+            <p class="text-[9px] text-zinc-400 dark:text-zinc-500 mb-1">${company.nomComplet}</p>
             <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-normal mb-2">
-              ${etab.adresse}
+              ${formatAddress(etab)}
             </p>
-            <div class="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 flex justify-between items-center border-t pt-1.5 border-zinc-100 dark:border-zinc-800/80">
-              <span>${category?.label || "Autre"}</span>
-              <span class="text-zinc-400 dark:text-zinc-500 font-mono">${company.codeNaf}</span>
+            <div class="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 border-t pt-1.5 border-zinc-100 dark:border-zinc-800/80">
+              ${getActivityLabel(etab, company)}
             </div>
           </div>
         `;

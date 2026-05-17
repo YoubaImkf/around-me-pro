@@ -6,6 +6,26 @@
 @theme inline {
   --font-sans: var(--font-sans), Inter, system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
+
+  /* Mobile-first spacing scale */
+  --spacing-touch: 2.75rem; /* 44px minimum touch target */
+  --spacing-page-x: 1rem;
+  --spacing-page-y: 0.75rem;
+
+  /* Breakpoint-aware container padding (mobile default) */
+  --container-padding: 1rem;
+
+  @media (width >= 640px) {
+    --spacing-page-x: 1.25rem;
+    --spacing-page-y: 1rem;
+    --container-padding: 1.25rem;
+  }
+
+  @media (width >= 1024px) {
+    --spacing-page-x: 1.5rem;
+    --spacing-page-y: 1.25rem;
+    --container-padding: 1.5rem;
+  }
 }
 
 :root {
@@ -13,13 +33,22 @@
   --foreground: #09090b;
   --card-background: #ffffff;
   --card-border: rgba(9, 9, 11, 0.06);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --header-height: 3.5rem;
+  --tab-bar-height: 3.75rem;
 }
 
 .dark {
-  --background: #121214; /* Deep, soft slate background */
+  --background: #121214;
   --foreground: #f4f4f5;
-  --card-background: #272729; /* User-recommended elevated container surface (outstanding visibility) */
-  --card-border: #38383d; /* Clear separating border to completely outline cards */
+  --card-background: #272729;
+  --card-border: #38383d;
+}
+
+html {
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -27,8 +56,39 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
-  letter-spacing: -0.011em; /* Beautiful slight typographic kerning refinement */
-  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 100dvh;
+  overflow-x: hidden;
+  letter-spacing: -0.011em;
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent horizontal scroll from any child */
+#__next,
+body > * {
+  max-width: 100%;
+}
+
+/* Touch-friendly interactive minimum */
+.touch-target {
+  min-height: var(--spacing-touch);
+  min-width: var(--spacing-touch);
+}
+
+.touch-target-inline {
+  min-height: var(--spacing-touch);
+  padding-inline: 1rem;
+}
+
+/* Page shell with bottom nav clearance on mobile */
+.app-main-mobile {
+  padding-bottom: calc(var(--tab-bar-height) + var(--safe-bottom) + 0.5rem);
+}
+
+@media (width >= 1024px) {
+  .app-main-mobile {
+    padding-bottom: 0;
+  }
 }
 
 /* Premium smooth custom scrollbar */
@@ -58,13 +118,18 @@ body {
   background: rgba(244, 244, 245, 0.24);
 }
 
-/* Leaflet map customization overlays to look like an institutional premium service */
+.custom-scrollbar {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Leaflet map customization */
 .leaflet-container {
   background: var(--background) !important;
   font-family: var(--font-sans) !important;
+  touch-action: pan-x pan-y;
 }
 
-/* Remove default Leaflet shadow/borders to make it look clean */
 .leaflet-bar {
   border: 1px solid var(--card-border) !important;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05) !important;
@@ -77,6 +142,10 @@ body {
   color: var(--foreground) !important;
   border-bottom: 1px solid var(--card-border) !important;
   transition: background-color 0.15s ease;
+  width: 36px !important;
+  height: 36px !important;
+  line-height: 36px !important;
+  font-size: 18px !important;
 }
 
 .leaflet-bar a:hover {
@@ -106,18 +175,29 @@ body {
   border: 1px solid var(--card-border) !important;
 }
 
-/* Premium smooth hover effect for interactive map markers */
 .marker-icon-inner {
   transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: bottom center;
 }
 
-.marker-icon-inner:hover {
-  transform: scale(1.18);
+@media (hover: hover) {
+  .marker-icon-inner:hover {
+    transform: scale(1.18);
+  }
 }
 
-/* Premium Focus Rings for Accessibility */
 *:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

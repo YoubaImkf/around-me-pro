@@ -1,5 +1,7 @@
 export interface Etablissement {
   siret: string;
+  /** Trade / operational name (liste_enseignes, nom_commercial, etc.) */
+  nomEtablissement: string;
   enseigne?: string;
   adresse: string;
   codePostal: string;
@@ -8,6 +10,9 @@ export interface Etablissement {
   longitude: number;
   estSiege: boolean;
   statut: string;
+  codeNaf: string;
+  libelleNaf?: string;
+  effectifSalarie: string;
   telephone: string;
   email: string;
   siteWeb: string;

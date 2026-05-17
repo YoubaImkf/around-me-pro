@@ -1,24 +1,9 @@
 import { Company } from "@/types/company";
 import { flattenEstablishments } from "@/lib/establishments";
+import { normalizeEtablissementFromApi } from "@/lib/etablissementNormalize";
+import { getEmployeeSize } from "@/lib/employeeSize";
 
-export const EMPLOYEE_SIZE_MAP: Record<string, string> = {
-  NN: "Effectif non renseigné",
-  "00": "0 salarié (pas de salarié actif)",
-  "01": "1 ou 2 salariés",
-  "02": "3 à 5 salariés",
-  "03": "6 à 9 salariés",
-  "11": "10 à 19 salariés",
-  "12": "20 à 49 salariés",
-  "21": "50 à 99 salariés",
-  "22": "100 à 199 salariés",
-  "31": "200 à 249 salariés",
-  "32": "250 à 499 salariés",
-  "41": "500 à 999 salariés",
-  "42": "1 000 à 1 999 salariés",
-  "51": "2 000 à 4 999 salariés",
-  "52": "5 000 à 9 999 salariés",
-  "53": "10 000 salariés et plus"
-};
+export { EMPLOYEE_SIZE_MAP, getEmployeeSize } from "@/lib/employeeSize";
 
 export const MAX_COMPANY_PAGES = 100;
 export const DINUM_PER_PAGE = 25;
@@ -37,11 +22,6 @@ export interface DinumPageResult {
   totalCompanies: number;
   totalCompanyPages: number;
   page: number;
-}
-
-export function getEmployeeSize(code: string | null): string {
-  if (!code) return "Effectif non renseigné";
-  return EMPLOYEE_SIZE_MAP[code] || `Tranche d'effectif: ${code}`;
 }
 
 export function getHaversineDistance(
@@ -86,21 +66,13 @@ export function normalizeCompanies(
           const distance = getHaversineDistance(searchLat, searchLon, etabLat, etabLon);
           if (distance > radius * 1.05) return null;
 
-          return {
-            siret: etab.siret,
-            enseigne: etab.enseigne || etab.nom_commercial || "",
-            adresse: etab.adresse || company.siege?.adresse || "",
-            codePostal: etab.code_postal || company.siege?.code_postal || "",
-            commune: etab.libelle_commune || company.siege?.libelle_commune || "",
-            latitude: etabLat,
-            longitude: etabLon,
-            estSiege: etab.est_siege || false,
-            statut: etab.etat_administratif === "A" ? "Actif" : "Fermé",
-            telephone: "Non communiqué (réglementation INSEE)",
-            email: "Non communiqué (réglementation INSEE)",
-            siteWeb: "Non renseigné",
-            distance: Math.round(distance * 100) / 100
-          };
+          return normalizeEtablissementFromApi(
+            etab,
+            company,
+            searchLat,
+            searchLon,
+            distance
+          );
         })
         .filter((etab: any) => etab !== null);
 

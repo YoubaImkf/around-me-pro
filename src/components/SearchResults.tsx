@@ -11,6 +11,7 @@ import {
   hasContactInfo,
   type EstablishmentRow
 } from "@/lib/establishments";
+import { annuaireEtablissementUrl } from "@/lib/etablissementNormalize";
 import { Company, Etablissement, SearchPagination } from "@/types/company";
 
 export type PageSizeOption = 10 | 25 | 50 | 100 | "all";
@@ -317,7 +318,7 @@ export default function SearchResults({
           const gMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
             `${displayName} ${formatAddress(etab)}`
           )}`;
-          const annuaireLink = `https://annuaire-entreprises.data.gouv.fr/entreprise/${company.siren}`;
+          const annuaireLink = annuaireEtablissementUrl(etab.siret);
 
           return (
             <li key={etab.siret}>
@@ -334,11 +335,10 @@ export default function SearchResults({
                   <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
                     {displayName}
                   </h4>
-                  {displayName !== company.nomComplet && (
-                    <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
-                      {company.nomComplet}
-                    </p>
-                  )}
+                  <p className="mt-0.5 truncate text-xs text-zinc-500 dark:text-zinc-400">
+                    <span className="text-zinc-400">Raison sociale · </span>
+                    {company.nomComplet}
+                  </p>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5">
                     {category && (
                       <span
@@ -377,7 +377,9 @@ export default function SearchResults({
                     <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
                       Activité
                     </p>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-200">{getActivityLabel(company)}</p>
+                    <p className="font-medium text-zinc-800 dark:text-zinc-200">
+                      {getActivityLabel(etab, company)}
+                    </p>
                   </div>
                   <div>
                     <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
@@ -434,11 +436,11 @@ export default function SearchResults({
                     </div>
                     <div className="col-span-2">
                       <dt className="text-zinc-400">Code NAF</dt>
-                      <dd>{company.codeNaf}</dd>
+                      <dd>{etab.codeNaf}</dd>
                     </div>
                     <div className="col-span-2">
                       <dt className="text-zinc-400">Effectif</dt>
-                      <dd className="font-sans">{company.effectifSalarie}</dd>
+                      <dd className="font-sans">{etab.effectifSalarie}</dd>
                     </div>
                   </dl>
                 )}
@@ -460,7 +462,7 @@ export default function SearchResults({
                     onClick={(e) => e.stopPropagation()}
                     className="inline-flex rounded-lg border border-zinc-200 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
                   >
-                    Fiche INSEE
+                    Fiche établissement
                   </a>
                 </div>
               </article>

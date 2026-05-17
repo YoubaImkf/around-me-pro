@@ -66,9 +66,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [currentCity, setCurrentCity] = useState("Lyon");
+  const [currentCity, setCurrentCity] = useState("");
   const [currentRadius, setCurrentRadius] = useState(10);
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>(["tech"]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [onlyActive, setOnlyActive] = useState(true);
   const [nafCode, setNafCode] = useState("");
 
@@ -77,7 +77,7 @@ export default function Home() {
   const [pagination, setPagination] = useState<SearchPagination>(defaultPagination);
   const [perPage, setPerPage] = useState<PageSizeOption>(25);
 
-  const [mapCenter, setMapCenter] = useState<[number, number]>([45.764043, 4.835659]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([48.8566, 2.3522]); // Default map center loosely Paris coordinates
   const [selectedSiret, setSelectedSiret] = useState<string | null>(null);
   const [customCenter, setCustomCenter] = useState<[number, number] | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
@@ -334,7 +334,9 @@ export default function Home() {
               <button
                 onClick={() => {
                   setCustomCenter(null);
-                  executeSearch("Lyon", currentRadius, selectedCategoryIds, 1, null);
+                  if (currentCity) {
+                    executeSearch(currentCity, currentRadius, selectedCategoryIds, 1, null);
+                  }
                 }}
                 className="px-2 py-1 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-200 font-bold rounded-md text-[9px] cursor-pointer"
               >
