@@ -413,7 +413,7 @@ export default function SearchForm({
             Filtres rapides
           </span>
           <div className="flex flex-wrap items-center gap-2 select-none">
-            {[1, 5, 10, 20, 100].map((val) => {
+            {[1, 5, 10, 20, 50].map((val) => {
               const isActive = radiusState === val;
               return (
                 <button

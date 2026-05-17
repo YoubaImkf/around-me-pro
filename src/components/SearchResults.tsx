@@ -287,12 +287,12 @@ export default function SearchResults({
                 setSortOrder(o);
               }}
               aria-label="Trier les résultats"
-              className="min-h-[44px] flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 sm:flex-none sm:min-w-[140px]"
+              className="min-h-[44px] cursor-pointer flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 sm:flex-none sm:min-w-[140px]"
             >
-              <option value="name-asc">Nom A→Z</option>
-              <option value="name-desc">Nom Z→A</option>
-              <option value="distance-asc">Distance ↑</option>
-              <option value="distance-desc">Distance ↓</option>
+              <option value="name-asc">Nom A-Z</option>
+              <option value="name-desc">Nom Z-A</option>
+              <option value="distance-asc">Plus proche</option>
+              <option value="distance-desc">Plus loin</option>
               <option value="status-asc">Statut</option>
             </select>
 
@@ -300,7 +300,7 @@ export default function SearchResults({
               type="button"
               onClick={handleExport}
               disabled={exporting || !exportParams}
-              className="touch-target-inline inline-flex min-h-[44px] min-w-[140px] flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:flex-none"
+              className="touch-target-inline cursor-pointer inline-flex min-h-[44px] min-w-[140px] flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:flex-none"
             >
               {exporting ? (
                 <>
