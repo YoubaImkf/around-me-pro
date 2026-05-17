@@ -239,7 +239,7 @@ export default function SearchResults({
   return (
     <div className="flex flex-col gap-4">
       <div className="rounded-xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800/80 dark:bg-[#18181b]">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between lg:flex-col lg:items-stretch lg:gap-4">
           <div className="flex-1 space-y-2.5">
             <div className="flex flex-wrap items-center gap-2.5">
               <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Établissements</h3>
@@ -281,7 +281,7 @@ export default function SearchResults({
             </button>
           )}
 
-          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap lg:flex-nowrap lg:w-full">
             <select
               value={`${sortField}-${sortOrder}`}
               onChange={(e) => {
@@ -290,7 +290,7 @@ export default function SearchResults({
                 setSortOrder(o);
               }}
               aria-label="Trier les résultats"
-              className="min-h-[44px] cursor-pointer flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 sm:flex-none sm:min-w-[140px]"
+              className="min-h-[44px] cursor-pointer flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 sm:flex-none sm:min-w-[140px] lg:flex-1 lg:min-w-0"
             >
               <option value="name-asc">Nom A-Z</option>
               <option value="name-desc">Nom Z-A</option>
@@ -303,7 +303,7 @@ export default function SearchResults({
               type="button"
               onClick={handleExport}
               disabled={exporting || !exportParams}
-              className="touch-target-inline cursor-pointer inline-flex min-h-[44px] min-w-[140px] flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:flex-none"
+              className="touch-target-inline cursor-pointer inline-flex min-h-[44px] min-w-[140px] flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:flex-none lg:flex-1 lg:min-w-0"
             >
               {exporting ? (
                 <>
