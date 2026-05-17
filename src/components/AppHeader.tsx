@@ -15,42 +15,50 @@ export default function AppHeader({
 }: AppHeaderProps) {
   return (
     <header
-      className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-zinc-200/50 bg-white/90 px-4 backdrop-blur-md supports-[backdrop-filter]:bg-white/85 dark:border-zinc-800 dark:bg-[#121214]/90 dark:supports-[backdrop-filter]:bg-[#121214]/85 sm:px-6"
+      className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-zinc-200/60 bg-white/80 px-4 backdrop-blur-md dark:border-zinc-800/80 dark:bg-[#121214]/80 sm:px-6"
       style={{ paddingTop: "var(--safe-top)" }}
     >
-      <div className="flex min-w-0 items-center gap-2.5 sm:gap-3">
-        <div
-          className="flex h-3 w-4.5 shrink-0 overflow-hidden rounded-[2px] border border-zinc-200/10 shadow-xs"
-          aria-hidden="true"
-        >
-          <div className="h-full w-1/3 bg-[#002639]" />
-          <div className="h-full w-1/3 bg-white" />
-          <div className="h-full w-1/3 bg-[#E21A2C]" />
+      <div className="flex min-w-0 items-center gap-2.5 sm:gap-3.5">
+        {/* Premium geographic map pin logo */}
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-xs active:scale-95 transition-all">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="h-4.5 w-4.5"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
+          </svg>
         </div>
+
         <div className="min-w-0">
-          <h1 className="truncate text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="text-sm font-black uppercase tracking-wider text-zinc-900 dark:text-zinc-50 leading-tight">
             Around Me Pro
           </h1>
           {hasSearched && resultCount != null && (
-            <p className="truncate text-[10px] font-medium text-zinc-500 dark:text-zinc-400 lg:hidden">
-              {resultCount.toLocaleString("fr-FR")} établissement
-              {resultCount > 1 ? "s" : ""}
+            <p className="truncate text-[10px] font-bold text-zinc-400 dark:text-zinc-500 lg:hidden">
+              {resultCount.toLocaleString("fr-FR")} établissement{resultCount > 1 ? "s" : ""}
             </p>
           )}
         </div>
-        <span className="hidden shrink-0 rounded-sm border border-blue-100/30 bg-blue-50 px-1.5 py-0.5 text-[9px] font-semibold text-blue-600 dark:border-blue-900/20 dark:bg-blue-950/40 dark:text-blue-400 sm:inline">
+
+        <span className="hidden shrink-0 rounded-full bg-zinc-100 px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:inline">
           Open Data
         </span>
       </div>
 
-      <div className="flex shrink-0 items-center gap-2 sm:gap-4">
-        <div className="hidden items-center gap-4 text-[10px] font-medium text-zinc-400 dark:text-zinc-500 md:flex">
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+      <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+        {/* Beautiful connectivity pills */}
+        <div className="hidden items-center gap-2 md:flex">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-zinc-50/50 px-2 py-0.5 text-[9px] font-bold text-zinc-500 dark:border-zinc-800/60 dark:bg-zinc-900/30 dark:text-zinc-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             BAN API
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-zinc-50/50 px-2 py-0.5 text-[9px] font-bold text-zinc-500 dark:border-zinc-800/60 dark:bg-zinc-900/30 dark:text-zinc-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             DINUM API
           </span>
         </div>
@@ -59,7 +67,7 @@ export default function AppHeader({
           type="button"
           onClick={onToggleTheme}
           aria-label="Changer de thème"
-          className="touch-target cursor-pointer flex items-center justify-center rounded-xl text-zinc-500 transition-colors hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-50"
+          className="cursor-pointer flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50 hover:text-zinc-900 dark:border-zinc-800 dark:bg-[#1f1f21] dark:text-zinc-400 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-50 active:scale-95 transition-all duration-200"
         >
           {theme === "light" ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
