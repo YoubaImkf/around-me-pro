@@ -1,0 +1,284 @@
+import { Company } from "@/types/company";
+import { flattenEstablishments } from "@/lib/establishments";
+
+export const EMPLOYEE_SIZE_MAP: Record<string, string> = {
+  NN: "Effectif non renseigné",
+  "00": "0 salarié (pas de salarié actif)",
+  "01": "1 ou 2 salariés",
+  "02": "3 à 5 salariés",
+  "03": "6 à 9 salariés",
+  "11": "10 à 19 salariés",
+  "12": "20 à 49 salariés",
+  "21": "50 à 99 salariés",
+  "22": "100 à 199 salariés",
+  "31": "200 à 249 salariés",
+  "32": "250 à 499 salariés",
+  "41": "500 à 999 salariés",
+  "42": "1 000 à 1 999 salariés",
+  "51": "2 000 à 4 999 salariés",
+  "52": "5 000 à 9 999 salariés",
+  "53": "10 000 salariés et plus"
+};
+
+export const MAX_COMPANY_PAGES = 100;
+export const DINUM_PER_PAGE = 25;
+
+export interface SearchParams {
+  lat: number;
+  lon: number;
+  radius: number;
+  sections: string;
+  naf: string;
+  onlyActive: boolean;
+}
+
+export interface DinumPageResult {
+  companies: Company[];
+  totalCompanies: number;
+  totalCompanyPages: number;
+  page: number;
+}
+
+export function getEmployeeSize(code: string | null): string {
+  if (!code) return "Effectif non renseigné";
+  return EMPLOYEE_SIZE_MAP[code] || `Tranche d'effectif: ${code}`;
+}
+
+export function getHaversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+export function normalizeCompanies(
+  results: any[],
+  searchLat: number,
+  searchLon: number,
+  radius: number,
+  onlyActive: boolean
+): Company[] {
+  return results
+    .map((company: any) => {
+      if (onlyActive && company.etat_administratif === "F") return null;
+
+      const etablissements = (company.matching_etablissements || [])
+        .map((etab: any) => {
+          if (onlyActive && etab.etat_administratif === "F") return null;
+
+          const etabLat = parseFloat(etab.latitude || company.siege?.latitude);
+          const etabLon = parseFloat(etab.longitude || company.siege?.longitude);
+
+          if (isNaN(etabLat) || isNaN(etabLon)) return null;
+
+          const distance = getHaversineDistance(searchLat, searchLon, etabLat, etabLon);
+          if (distance > radius * 1.05) return null;
+
+          return {
+            siret: etab.siret,
+            enseigne: etab.enseigne || etab.nom_commercial || "",
+            adresse: etab.adresse || company.siege?.adresse || "",
+            codePostal: etab.code_postal || company.siege?.code_postal || "",
+            commune: etab.libelle_commune || company.siege?.libelle_commune || "",
+            latitude: etabLat,
+            longitude: etabLon,
+            estSiege: etab.est_siege || false,
+            statut: etab.etat_administratif === "A" ? "Actif" : "Fermé",
+            telephone: "Non communiqué (réglementation INSEE)",
+            email: "Non communiqué (réglementation INSEE)",
+            siteWeb: "Non renseigné",
+            distance: Math.round(distance * 100) / 100
+          };
+        })
+        .filter((etab: any) => etab !== null);
+
+      if (etablissements.length === 0) return null;
+
+      return {
+        siren: company.siren,
+        nomComplet: company.nom_complet || company.nom_raison_sociale || "Entreprise inconnue",
+        secteur: company.section_activite_principale || "Autre",
+        codeNaf: company.activite_principale || "Inconnu",
+        libelleNaf:
+          company.libelle_activite_principale ||
+          company.activite_principale_libelle ||
+          "",
+        categorie: company.categorie_entreprise || "TPE/PME",
+        effectifSalarie: getEmployeeSize(company.tranche_effectif_salarie),
+        etablissements,
+        siegeSocial: {
+          siret: company.siege?.siret || "",
+          adresse: company.siege?.adresse || "",
+          codePostal: company.siege?.code_postal || "",
+          commune: company.siege?.libelle_commune || ""
+        }
+      };
+    })
+    .filter((company: any) => company !== null) as Company[];
+}
+
+export async function fetchDinumPage(
+  params: SearchParams,
+  page: number
+): Promise<DinumPageResult> {
+  const queryParams = new URLSearchParams({
+    lat: params.lat.toString(),
+    long: params.lon.toString(),
+    radius: params.radius.toString(),
+    page: page.toString(),
+    per_page: DINUM_PER_PAGE.toString()
+  });
+
+  if (params.sections) {
+    queryParams.append("section_activite_principale", params.sections);
+  }
+  if (params.naf) {
+    queryParams.append("activite_principale", params.naf.replace(/\s+/g, ""));
+  }
+
+  const companyRes = await fetch(
+    `https://recherche-entreprises.api.gouv.fr/near_point?${queryParams.toString()}`,
+    {
+      headers: { "User-Agent": "AroundMePro/1.0" },
+      next: { revalidate: 60 }
+    }
+  );
+
+  if (!companyRes.ok) {
+    throw new Error(`DINUM_ERROR_${companyRes.status}`);
+  }
+
+  const companyData = await companyRes.json();
+  const companies = normalizeCompanies(
+    companyData.results || [],
+    params.lat,
+    params.lon,
+    params.radius,
+    params.onlyActive
+  );
+
+  return {
+    companies,
+    totalCompanies: companyData.total_results || 0,
+    totalCompanyPages: companyData.total_pages || 1,
+    page: companyData.page || page
+  };
+}
+
+/** Collect establishments across DINUM pages until slice is filled or data exhausted. */
+export async function collectEstablishments(
+  params: SearchParams,
+  options: {
+    establishmentPage: number;
+    perPage: number;
+    fetchAll?: boolean;
+  }
+): Promise<{
+  companies: Company[];
+  establishments: ReturnType<typeof flattenEstablishments>;
+  totalCompanies: number;
+  totalCompanyPages: number;
+  totalEstablishments: number;
+  isEstablishmentCountExact: boolean;
+}> {
+  const { establishmentPage, perPage, fetchAll = false } = options;
+  const targetStart = fetchAll ? 0 : (establishmentPage - 1) * perPage;
+  const targetEnd = fetchAll ? Number.MAX_SAFE_INTEGER : targetStart + perPage;
+
+  const companyMap = new Map<string, Company>();
+  let allEstablishments = flattenEstablishments([]);
+  let totalCompanies = 0;
+  let totalCompanyPages = 1;
+  let companyPage = 1;
+
+  while (companyPage <= totalCompanyPages && companyPage <= MAX_COMPANY_PAGES) {
+    const pageResult = await fetchDinumPage(params, companyPage);
+    totalCompanies = pageResult.totalCompanies;
+    totalCompanyPages = pageResult.totalCompanyPages;
+
+    for (const company of pageResult.companies) {
+      const existing = companyMap.get(company.siren);
+      if (existing) {
+        const sirets = new Set(existing.etablissements.map((e) => e.siret));
+        for (const etab of company.etablissements) {
+          if (!sirets.has(etab.siret)) {
+            existing.etablissements.push(etab);
+          }
+        }
+      } else {
+        companyMap.set(company.siren, { ...company });
+      }
+    }
+
+    allEstablishments = flattenEstablishments(Array.from(companyMap.values()));
+
+    const hasEnough = allEstablishments.length >= targetEnd;
+    const isLastPage = companyPage >= totalCompanyPages;
+
+    if (fetchAll && isLastPage) break;
+    if (!fetchAll && hasEnough) break;
+    if (isLastPage) break;
+
+    companyPage++;
+  }
+
+  const isEstablishmentCountExact = companyPage >= totalCompanyPages;
+  const totalEstablishments = isEstablishmentCountExact
+    ? allEstablishments.length
+    : Math.max(allEstablishments.length, totalCompanies);
+
+  const pageSlice = fetchAll
+    ? allEstablishments
+    : allEstablishments.slice(targetStart, targetEnd);
+
+  return {
+    companies: Array.from(companyMap.values()),
+    establishments: pageSlice,
+    totalCompanies,
+    totalCompanyPages,
+    totalEstablishments,
+    isEstablishmentCountExact
+  };
+}
+
+export async function geocodeCity(city: string): Promise<{
+  lat: number;
+  lon: number;
+  name: string;
+  postcode: string;
+}> {
+  const geocodeRes = await fetch(
+    `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(city)}&type=municipality&limit=1`,
+    { headers: { "User-Agent": "AroundMePro/1.0" } }
+  );
+
+  if (!geocodeRes.ok) {
+    throw new Error("GEOCODE_UNAVAILABLE");
+  }
+
+  const geocodeData = await geocodeRes.json();
+  if (!geocodeData.features?.length) {
+    throw new Error("CITY_NOT_FOUND");
+  }
+
+  const topFeature = geocodeData.features[0];
+  const coords = topFeature.geometry.coordinates;
+  return {
+    lon: coords[0],
+    lat: coords[1],
+    name: topFeature.properties.name,
+    postcode: topFeature.properties.postcode
+  };
+}

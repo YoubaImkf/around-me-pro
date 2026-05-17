@@ -1,26 +1,123 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* Enable class-based dark mode manually for Tailwind CSS v4 */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans), Inter, system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+:root {
+  --background: #fafafa;
+  --foreground: #09090b;
+  --card-background: #ffffff;
+  --card-border: rgba(9, 9, 11, 0.06);
+}
+
+.dark {
+  --background: #121214; /* Deep, soft slate background */
+  --foreground: #f4f4f5;
+  --card-background: #272729; /* User-recommended elevated container surface (outstanding visibility) */
+  --card-border: #38383d; /* Clear separating border to completely outline cards */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  letter-spacing: -0.011em; /* Beautiful slight typographic kerning refinement */
+  transition: background-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Premium smooth custom scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(9, 9, 11, 0.12);
+  border-radius: 999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(244, 244, 245, 0.12);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(9, 9, 11, 0.24);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(244, 244, 245, 0.24);
+}
+
+/* Leaflet map customization overlays to look like an institutional premium service */
+.leaflet-container {
+  background: var(--background) !important;
+  font-family: var(--font-sans) !important;
+}
+
+/* Remove default Leaflet shadow/borders to make it look clean */
+.leaflet-bar {
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  background-color: var(--card-background) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--card-border) !important;
+  transition: background-color 0.15s ease;
+}
+
+.leaflet-bar a:hover {
+  background-color: #f4f4f5 !important;
+}
+
+.dark .leaflet-bar a:hover {
+  background-color: #27272a !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--card-background) !important;
+  color: var(--foreground) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--card-border) !important;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05) !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--card-background) !important;
+  border: 1px solid var(--card-border) !important;
+}
+
+/* Premium smooth hover effect for interactive map markers */
+.marker-icon-inner {
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: bottom center;
+}
+
+.marker-icon-inner:hover {
+  transform: scale(1.18);
+}
+
+/* Premium Focus Rings for Accessibility */
+*:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
 }
