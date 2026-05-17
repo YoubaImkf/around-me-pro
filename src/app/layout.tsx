@@ -15,7 +15,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Around Me Pro | Découverte Géolocalisée d'Entreprises Françaises",
-  description: "Identifiez et cartographiez instantanément les entreprises françaises et leurs établissements à proximité de votre ville. Filtrage NAF intelligent pour étudiants, alternants et recruteurs.",
+  description:
+    "Identifiez et cartographiez instantanément les entreprises françaises et leurs établissements à proximité de votre ville. Filtrage NAF intelligent pour étudiants, alternants et recruteurs.",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover" as const
 };
 
 export default function RootLayout({

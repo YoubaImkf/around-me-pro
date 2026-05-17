@@ -238,7 +238,7 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
               onFocus={() => setIsOpen(true)}
               onKeyDown={handleKeyDown}
               placeholder="Ex : restaurant, logiciel, agence marketing…"
-              className="w-full h-10 pl-9 pr-9 bg-white border border-zinc-200 rounded-lg text-xs font-medium text-zinc-900 shadow-xs transition-all focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder-zinc-400 dark:bg-[#1a1a1c] dark:border-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-600 dark:focus:border-zinc-600"
+              className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-9 text-sm font-medium text-zinc-900 shadow-xs transition-all placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:border-zinc-600 dark:focus:ring-zinc-600"
             />
             {searchTerm && (
               <button

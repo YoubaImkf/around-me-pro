@@ -254,7 +254,7 @@ export default function SearchForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-5.5 p-5 bg-white border border-zinc-200/50 rounded-xl shadow-xs dark:bg-[#272729] dark:border-zinc-800"
+      className="flex flex-col gap-4 rounded-xl border border-zinc-200/50 bg-white p-4 shadow-xs dark:border-zinc-800 dark:bg-[#272729] sm:gap-5 sm:p-5"
     >
       {/* City search input */}
       <div ref={cityContainerRef} className="relative">
@@ -286,7 +286,7 @@ export default function SearchForm({
             }}
             onKeyDown={handleCityKeyDown}
             placeholder="Ex: Paris, Lyon, Bordeaux..."
-            className="w-full h-10 pl-9 pr-3.5 bg-white border border-zinc-200 rounded-lg text-xs font-medium text-zinc-900 shadow-xs transition-all focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder-zinc-400 dark:bg-[#1a1a1c] dark:border-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-600 dark:focus:border-zinc-600"
+            className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-3.5 text-sm font-medium text-zinc-900 shadow-xs transition-all placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:border-zinc-600 dark:focus:ring-zinc-600"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">
             <svg
@@ -317,7 +317,10 @@ export default function SearchForm({
                 role="option"
                 aria-selected={index === cityFocusedIndex}
                 onMouseDown={(e) => {
-                  // Use onMouseDown instead of onClick to prevent onBlur from firing before selection is complete
+                  e.preventDefault();
+                  handleSelectCity(suggestion);
+                }}
+                onTouchStart={(e) => {
                   e.preventDefault();
                   handleSelectCity(suggestion);
                 }}
@@ -357,7 +360,7 @@ export default function SearchForm({
             value={radiusInputString}
             onChange={handleRadiusInputChange}
             onBlur={handleRadiusInputBlur}
-            className="w-full bg-white dark:bg-[#1a1a1c] border border-zinc-200 dark:border-zinc-800 rounded-lg px-3.5 py-2.5 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-400 pr-10"
+            className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 pr-10 text-sm text-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:ring-zinc-400"
             placeholder="Ex: 1,2 ou 10 ou 57"
           />
           <span className="absolute right-3.5 text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase pointer-events-none select-none">
@@ -381,7 +384,7 @@ export default function SearchForm({
                   setRadiusInputString(val.toString());
                   if (onRadiusChange) onRadiusChange(val);
                 }}
-                className={`px-2 py-0.5 text-[9px] font-bold rounded transition-all cursor-pointer border ${
+                className={`min-h-9 cursor-pointer rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all ${
                   isActive
                     ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100"
                     : "bg-zinc-50/50 hover:bg-zinc-100 text-zinc-500 border-zinc-200/40 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 dark:text-zinc-400 dark:border-zinc-800/60"
@@ -423,8 +426,15 @@ export default function SearchForm({
         </label>
       </div>
 
-      {/* Job Title Assistant (Semantic Inference Extension Point) */}
-      <div className="p-3.5 bg-zinc-50 border border-zinc-200/50 rounded-lg dark:bg-zinc-900/10 dark:border-zinc-900">
+      {/* Job Title Assistant — collapsed on mobile to reduce cognitive load */}
+      <details className="rounded-xl border border-zinc-200/50 bg-zinc-50 dark:border-zinc-900 dark:bg-zinc-900/10">
+        <summary className="cursor-pointer list-none px-3.5 py-3 text-xs font-bold text-zinc-600 dark:text-zinc-300 [&::-webkit-details-marker]:hidden">
+          <span className="flex items-center justify-between gap-2">
+            Assistant métier (optionnel)
+            <span className="text-zinc-400" aria-hidden>▼</span>
+          </span>
+        </summary>
+      <div className="border-t border-zinc-200/50 px-3.5 pb-3.5 pt-2 dark:border-zinc-900">
         <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -443,7 +453,7 @@ export default function SearchForm({
           value={jobTitle}
           onChange={(e) => setJobTitle(e.target.value)}
           placeholder="Ex: Backend Developer, Childcare Assistant..."
-          className="w-full h-8 px-2.5 bg-white border border-zinc-200 rounded-md text-xs font-medium text-zinc-900 shadow-xs transition-all focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder-zinc-400 dark:bg-[#1a1a1c] dark:border-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-600"
+          className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white px-3 text-sm font-medium text-zinc-900 shadow-xs transition-all placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:ring-zinc-600"
         />
 
         {/* Semantic suggestions display */}
@@ -485,17 +495,18 @@ export default function SearchForm({
           </div>
         )}
       </div>
+      </details>
 
       {/* Submit Button */}
       <button
         type="submit"
         disabled={loading}
-        className="w-full h-10 flex items-center justify-center gap-2 bg-zinc-900 text-white rounded-lg text-xs font-bold hover:bg-zinc-950 transition-all shadow-xs disabled:bg-zinc-100 disabled:text-zinc-400 disabled:cursor-not-allowed dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-900/60 dark:disabled:text-zinc-600 cursor-pointer"
+        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-900/60 dark:disabled:text-zinc-600 sm:py-4 sm:text-lg"
       >
         {loading ? (
           <>
             <svg
-              className="animate-spin -ml-1 mr-2 h-4 w-4 text-current"
+              className="animate-spin -ml-1 mr-2 h-5 w-5 text-current"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -522,7 +533,8 @@ export default function SearchForm({
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
               fill="currentColor"
-              className="w-3.5 h-3.5"
+              className="h-5 w-5"
+              aria-hidden="true"
             >
               <path
                 fillRule="evenodd"

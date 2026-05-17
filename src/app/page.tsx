@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import dynamic from "next/dynamic";
+import AppHeader from "@/components/AppHeader";
+import GeoTargetBanner from "@/components/GeoTargetBanner";
+import MobileTabBar, { type MobileView } from "@/components/MobileTabBar";
 import SearchForm from "@/components/SearchForm";
 import SearchResults, {
   type ExportSearchParams,
@@ -9,24 +12,21 @@ import SearchResults, {
 } from "@/components/SearchResults";
 import type { EstablishmentRow } from "@/lib/establishments";
 import { SearchPagination } from "@/types/company";
+import { Company, Etablissement } from "@/types/company";
 
 const Map = dynamic(() => import("@/components/Map"), {
   ssr: false,
   loading: () => (
-    <div className="w-full h-full min-h-[300px] bg-zinc-100 rounded-2xl flex items-center justify-center border border-zinc-200/50 dark:bg-zinc-900/30 dark:border-zinc-800/50">
-      <div className="flex flex-col items-center gap-2">
-        <MapLoadingFallback title="Chargement de la carte interactive…" />
-      </div>
+    <div className="flex h-full min-h-[220px] w-full items-center justify-center rounded-xl border border-zinc-200/50 bg-zinc-100 dark:border-zinc-800/50 dark:bg-zinc-900/30 sm:min-h-[280px] lg:min-h-[300px]">
+      <MapLoadingFallback title="Chargement de la carte…" />
     </div>
   )
 });
 
-import { Company, Etablissement } from "@/types/company";
-
 function MapLoadingFallback({ title }: { title: string }) {
   return (
     <div className="flex flex-col items-center gap-2">
-      <div className="w-8 h-8 border-3 border-zinc-300 border-t-zinc-950 rounded-full animate-spin dark:border-zinc-800 dark:border-t-blue-500" />
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-zinc-950 dark:border-zinc-800 dark:border-t-blue-500" />
       <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">{title}</span>
     </div>
   );
@@ -77,11 +77,12 @@ export default function Home() {
   const [pagination, setPagination] = useState<SearchPagination>(defaultPagination);
   const [perPage, setPerPage] = useState<PageSizeOption>(25);
 
-  const [mapCenter, setMapCenter] = useState<[number, number]>([48.8566, 2.3522]); // Default map center loosely Paris coordinates
+  const [mapCenter, setMapCenter] = useState<[number, number]>([48.8566, 2.3522]);
   const [selectedSiret, setSelectedSiret] = useState<string | null>(null);
   const [customCenter, setCustomCenter] = useState<[number, number] | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [hasSearched, setHasSearched] = useState(false);
+  const [mobileView, setMobileView] = useState<MobileView>("search");
 
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -130,15 +131,13 @@ export default function Home() {
       lat: customCenter?.[0],
       lon: customCenter?.[1]
     };
-  }, [
-    hasSearched,
-    currentCity,
-    currentRadius,
-    selectedCategoryIds,
-    nafCode,
-    onlyActive,
-    customCenter
-  ]);
+  }, [hasSearched, currentCity, currentRadius, selectedCategoryIds, nafCode, onlyActive, customCenter]);
+
+  const goToResultsOnMobile = useCallback(() => {
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+      setMobileView("results");
+    }
+  }, []);
 
   const executeSearch = useCallback(
     async (
@@ -195,16 +194,18 @@ export default function Home() {
         setCurrentRadius(data.city.radius);
 
         setPagination(data.pagination || defaultPagination);
+        goToResultsOnMobile();
       } catch (err: unknown) {
         console.error("Search failed:", err);
         setError(err instanceof Error ? err.message : "Impossible de joindre le service de recherche.");
         setCompanies([]);
         setEstablishments([]);
+        goToResultsOnMobile();
       } finally {
         setLoading(false);
       }
     },
-    [customCenter, onlyActive, nafCode, perPage]
+    [customCenter, onlyActive, nafCode, perPage, goToResultsOnMobile]
   );
 
   const handleSearchSubmit = (params: {
@@ -238,6 +239,9 @@ export default function Home() {
 
   const handleSelectEstablishment = (_company: Company, establishment: Etablissement) => {
     setSelectedSiret(establishment.siret);
+    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+      setMobileView("results");
+    }
   };
 
   const handleMapClick = (lat: number, lng: number) => {
@@ -254,125 +258,105 @@ export default function Home() {
     setCustomCenter(null);
   };
 
+  const searchPanel = (
+    <div className="flex w-full flex-col gap-3 sm:gap-4">
+      <SearchForm
+        city={currentCity}
+        radius={currentRadius}
+        onlyActive={onlyActive}
+        initialNafCode={nafCode}
+        onSearch={handleSearchSubmit}
+        loading={loading}
+        selectedCategoryIds={selectedCategoryIds}
+        setSelectedCategoryIds={setSelectedCategoryIds}
+        onRadiusChange={setCurrentRadius}
+        onCitySelect={handleCitySelect}
+      />
+      {customCenter && (
+        <GeoTargetBanner
+          coordinates={customCenter}
+          onReset={() => {
+            setCustomCenter(null);
+            if (currentCity) {
+              executeSearch(currentCity, currentRadius, selectedCategoryIds, 1, null);
+            }
+          }}
+        />
+      )}
+    </div>
+  );
+
+  const resultsPanel = (
+    <SearchResults
+      establishments={establishments}
+      loading={loading}
+      error={error}
+      selectedSiret={selectedSiret}
+      onSelectEstablishment={handleSelectEstablishment}
+      pagination={pagination}
+      onPageChange={handlePageChange}
+      onPerPageChange={handlePerPageChange}
+      perPage={perPage}
+      hasSearched={hasSearched}
+      exportParams={exportParams}
+      onOpenMap={() => setMobileView("map")}
+    />
+  );
+
+  const mapPanel = (
+    <div className={`flex-1 w-full flex flex-col relative z-0 ${mobileView === "map" ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))]" : "h-[350px] sm:h-[450px]"} lg:!h-full lg:min-h-0`}>
+      <Map
+        center={mapCenter}
+        radius={currentRadius}
+        companies={companies}
+        selectedSiret={selectedSiret}
+        onSelectEstablishment={handleSelectEstablishment}
+        onMapClick={handleMapClick}
+        customCenter={customCenter}
+        theme={theme}
+        isVisible={mobileView === "map" || (typeof window !== "undefined" && window.innerWidth >= 1024)}
+      />
+    </div>
+  );
+
   return (
-    <div className="flex flex-col flex-1 min-h-screen bg-[#fafafa] dark:bg-[#09090b]">
-      <header className="sticky top-0 z-40 h-14 bg-white/85 backdrop-blur-md border-b border-zinc-200/50 dark:bg-[#121214]/85 dark:border-zinc-800 px-6 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
-          <div className="flex h-3 w-4.5 rounded-[2px] overflow-hidden shadow-xs border border-zinc-200/10" aria-hidden="true">
-            <div className="bg-[#002639] w-1/3 h-full" />
-            <div className="bg-[#FFFFFF] w-1/3 h-full" />
-            <div className="bg-[#E21A2C] w-1/3 h-full" />
-          </div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-50">
-              Around Me Pro
-            </h1>
-            <span className="text-[9px] font-semibold px-1.5 py-0.2 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-sm border border-blue-100/30 dark:border-blue-900/20">
-              Open Data
-            </span>
-          </div>
+    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-[#fafafa] dark:bg-[#09090b]">
+      <AppHeader
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        hasSearched={hasSearched}
+        resultCount={pagination.totalEstablishments}
+      />
+
+      <main 
+        className={`app-main-mobile mx-auto flex w-full max-w-[1440px] flex-1 flex-col lg:grid lg:grid-cols-12 lg:items-start lg:gap-5 lg:px-6 lg:py-5 ${
+          mobileView === "map" ? "p-0" : "px-4 py-3 sm:px-5 sm:py-4"
+        }`}
+      >
+        {/* Mobile: single active panel */}
+        <div className={`flex flex-col lg:hidden ${mobileView === "map" ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))] gap-0 w-full" : "gap-3"}`}>
+          {mobileView === "search" && searchPanel}
+          {mobileView === "results" && resultsPanel}
+          {mobileView === "map" && mapPanel}
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-4 text-[10px] text-zinc-400 dark:text-zinc-500 font-medium">
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              <span>BAN API</span>
-            </div>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-              <span>DINUM API</span>
-            </div>
-          </div>
-
-          <button
-            onClick={toggleTheme}
-            type="button"
-            aria-label="Changer de thème"
-            className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50 transition-all cursor-pointer"
-          >
-            {theme === "light" ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-amber-400">
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
-              </svg>
-            )}
-          </button>
-        </div>
-      </header>
-
-      <main className="flex-1 w-full max-w-[1440px] mx-auto px-6 py-5 grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-5 flex flex-col gap-4 w-full lg:max-h-[calc(100vh-96px)] lg:overflow-y-auto pr-2 pb-6 custom-scrollbar">
-          <SearchForm
-            city={currentCity}
-            radius={currentRadius}
-            onlyActive={onlyActive}
-            initialNafCode={nafCode}
-            onSearch={handleSearchSubmit}
-            loading={loading}
-            selectedCategoryIds={selectedCategoryIds}
-            setSelectedCategoryIds={setSelectedCategoryIds}
-            onRadiusChange={setCurrentRadius}
-            onCitySelect={handleCitySelect}
-          />
-
-          {customCenter && (
-            <div className="bg-zinc-50 border border-zinc-200/50 p-3.5 rounded-lg flex items-center justify-between gap-3 text-xs text-zinc-900 dark:bg-zinc-900/10 dark:border-zinc-900">
-              <div className="flex items-center gap-2">
-                <span className="text-sm flex-shrink-0">📍</span>
-                <div>
-                  <p className="font-bold text-zinc-800 dark:text-zinc-200">Recherche géociblée active</p>
-                  <p className="text-[9px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider mt-0.5">
-                    {customCenter[0].toFixed(5)}, {customCenter[1].toFixed(5)}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setCustomCenter(null);
-                  if (currentCity) {
-                    executeSearch(currentCity, currentRadius, selectedCategoryIds, 1, null);
-                  }
-                }}
-                className="px-2 py-1 bg-white hover:bg-zinc-50 border border-zinc-200 text-zinc-700 dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-200 font-bold rounded-md text-[9px] cursor-pointer"
-              >
-                Réinitialiser
-              </button>
-            </div>
-          )}
-
-          <SearchResults
-            establishments={establishments}
-            loading={loading}
-            error={error}
-            selectedSiret={selectedSiret}
-            onSelectEstablishment={handleSelectEstablishment}
-            pagination={pagination}
-            onPageChange={handlePageChange}
-            onPerPageChange={handlePerPageChange}
-            perPage={perPage}
-            hasSearched={hasSearched}
-            exportParams={exportParams}
-          />
+        {/* Desktop: sidebar + map */}
+        <div className="hidden lg:col-span-5 lg:flex lg:max-h-[calc(100dvh-var(--header-height)-2.5rem)] lg:flex-col lg:gap-4 lg:overflow-y-auto lg:pb-6 lg:pr-1 custom-scrollbar">
+          {searchPanel}
+          {resultsPanel}
         </div>
 
-        <div className="lg:col-span-7 w-full h-[350px] sm:h-[450px] lg:h-[calc(100vh-96px)] lg:sticky lg:top-[76px]">
-          <Map
-            center={mapCenter}
-            radius={currentRadius}
-            companies={companies}
-            selectedSiret={selectedSiret}
-            onSelectEstablishment={handleSelectEstablishment}
-            onMapClick={handleMapClick}
-            customCenter={customCenter}
-            theme={theme}
-          />
+        <div className="hidden lg:col-span-7 lg:block lg:h-[calc(100dvh-var(--header-height)-2.5rem)] lg:sticky lg:top-[calc(var(--header-height)+1.25rem)]">
+          {mapPanel}
         </div>
       </main>
+
+      <MobileTabBar
+        activeView={mobileView}
+        onViewChange={setMobileView}
+        hasResults={hasSearched}
+        resultsBadge={pagination.establishmentsOnPage}
+      />
     </div>
   );
 }

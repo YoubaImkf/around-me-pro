@@ -16,6 +16,8 @@ interface MapProps {
   onMapClick?: (lat: number, lng: number) => void;
   customCenter?: [number, number] | null;
   theme: "light" | "dark";
+  /** When false (hidden tab), skip resize work until visible again */
+  isVisible?: boolean;
 }
 
 // Beautiful custom modern SVG marker icon builder
@@ -61,7 +63,8 @@ export default function InteractiveMap({
   onSelectEstablishment,
   onMapClick,
   customCenter,
-  theme
+  theme,
+  isVisible = true
 }: MapProps) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
@@ -82,7 +85,8 @@ export default function InteractiveMap({
       markerZoomAnimation: false
     }).setView(center, 12);
 
-    L.control.zoom({ position: "bottomright" }).addTo(map);
+    const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+    L.control.zoom({ position: isMobile ? "bottomleft" : "bottomright" }).addTo(map);
 
     // Feature group to manage markers
     const markerGroup = L.featureGroup().addTo(map);
@@ -102,6 +106,31 @@ export default function InteractiveMap({
       map.remove();
     };
   }, []);
+
+  // Fix tile gaps after container resize (mobile tab switch, orientation)
+  useEffect(() => {
+    if (!mapInstance || !isVisible) return;
+
+    const container = mapContainerRef.current;
+    if (!container) return;
+
+    const refresh = () => {
+      requestAnimationFrame(() => {
+        mapInstance.invalidateSize({ animate: false });
+      });
+    };
+
+    refresh();
+
+    const ro = new ResizeObserver(refresh);
+    ro.observe(container);
+    window.addEventListener("orientationchange", refresh);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("orientationchange", refresh);
+    };
+  }, [mapInstance, isVisible]);
 
   // Dynamically swap map tile layers when theme switches, preserving center/zoom state!
   useEffect(() => {
@@ -279,8 +308,8 @@ export default function InteractiveMap({
   }, [selectedSiret, companies]);
 
   return (
-    <div className="relative w-full h-full rounded-lg overflow-hidden border border-zinc-200/50 shadow-xs dark:border-zinc-900/80">
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
+    <div className="relative flex-1 min-h-[300px] h-full w-full flex flex-col overflow-hidden lg:rounded-xl border-y border-zinc-200/50 shadow-xs lg:border lg:border-zinc-200/50 dark:border-zinc-900/80">
+      <div ref={mapContainerRef} className="z-0 flex-1 w-full min-h-0" />
       
       {/* Visual floating helper card for zoom/scale info */}
       <div className="absolute top-3.5 left-3.5 z-10 pointer-events-none hidden sm:flex flex-col gap-1 px-3 py-2 bg-white/90 backdrop-blur-md border border-zinc-200/50 rounded-lg shadow-sm text-[10px] font-bold text-zinc-800 dark:bg-[#272729]/90 dark:border-zinc-800 dark:text-zinc-200">
@@ -288,8 +317,13 @@ export default function InteractiveMap({
           <span className="w-1.5 h-1.5 bg-zinc-900 dark:bg-zinc-100 rounded-full animate-pulse" />
           <span>Zone active</span>
         </div>
-        <span className="text-[9px] text-zinc-400 dark:text-zinc-500 font-semibold uppercase tracking-wider">Rayon : {radius === 0.5 ? "500 m" : `${radius} km`}</span>
+        <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+          Rayon : {radius === 0.5 ? "500 m" : `${radius} km`}
+        </span>
       </div>
+      <p className="pointer-events-none absolute bottom-3 right-3 z-10 max-w-[10rem] rounded-md bg-white/90 px-2 py-1 text-center text-[9px] font-medium leading-tight text-zinc-500 backdrop-blur-sm dark:bg-zinc-900/80 dark:text-zinc-400 lg:hidden">
+        Touchez la carte pour cibler une zone
+      </p>
     </div>
   );
 }

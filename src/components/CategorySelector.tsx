@@ -187,7 +187,7 @@ export default function CategorySelector({
               ? "Rechercher ou sélectionner des secteurs..."
               : "Ajouter d'autres secteurs..."
           }
-          className="w-full h-10 px-3.5 bg-white border border-zinc-200 rounded-lg text-xs font-medium text-zinc-900 shadow-xs transition-all focus:outline-none focus:ring-1 focus:ring-zinc-400 focus:border-zinc-400 placeholder-zinc-400 dark:bg-[#1a1a1c] dark:border-zinc-800 dark:text-zinc-100 dark:focus:ring-zinc-600 dark:focus:border-zinc-600"
+          className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white px-3.5 text-sm font-medium text-zinc-900 shadow-xs transition-all placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:border-zinc-600 dark:focus:ring-zinc-600"
         />
 
         {/* Floating indicator */}
@@ -237,7 +237,7 @@ export default function CategorySelector({
                 data-index={index}
                 onClick={() => handleToggleCategory(cat.id)}
                 onMouseEnter={() => setFocusedIndex(index)}
-                className={`flex items-start gap-3 px-3 py-2 cursor-pointer select-none transition-colors border-b border-zinc-100 last:border-0 dark:border-zinc-900/40 ${
+                className={`flex min-h-11 cursor-pointer select-none items-start gap-3 border-b border-zinc-100 px-3 py-3 transition-colors last:border-0 dark:border-zinc-900/40 ${
                   isFocused
                     ? "bg-zinc-50 dark:bg-zinc-900/50"
                     : ""
