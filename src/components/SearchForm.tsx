@@ -361,14 +361,14 @@ export default function SearchForm({
                   handleSelectCity(suggestion);
                 }}
                 onMouseEnter={() => setCityFocusedIndex(index)}
-                className={`px-4 py-3 cursor-pointer transition-colors border-b border-zinc-100 last:border-0 dark:border-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-800 ${
+                className={`px-3.5 py-2 cursor-pointer transition-colors border-b border-zinc-100 last:border-0 dark:border-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/40 ${
                   index === cityFocusedIndex
-                    ? "bg-zinc-50 dark:bg-zinc-800"
+                    ? "bg-zinc-50 dark:bg-zinc-900/40"
                     : ""
                 }`}
               >
-                <div className="flex flex-col gap-1">
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-50 text-sm">
+                <div className="flex flex-col gap-0.5">
+                  <span className="font-bold text-zinc-900 dark:text-zinc-50 text-xs">
                     {suggestion.label}
                   </span>
                   <div className="flex items-center gap-2 text-[10px] text-zinc-500 dark:text-zinc-400">

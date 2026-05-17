@@ -79,10 +79,14 @@ export default function InteractiveMap({
   useEffect(() => {
     if (!mapContainerRef.current || mapInstance) return;
 
-    // Create Map with disabled marker zoom animation to avoid rendering jitters
+    // Create Map with disabled marker zoom animation to avoid rendering jitters,
+    // disabled default scroll wheel zooming to prevent page scroll hijacking,
+    // and disabled double-click zoom to use it for targeting search zones
     const map = L.map(mapContainerRef.current, {
       zoomControl: false,
-      markerZoomAnimation: false
+      markerZoomAnimation: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false
     }).setView(center, 12);
 
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
@@ -91,19 +95,43 @@ export default function InteractiveMap({
     // Feature group to manage markers
     const markerGroup = L.featureGroup().addTo(map);
 
-    // Click handler to select search center coordinates
-    map.on("click", (e: L.LeafletMouseEvent) => {
+    // Double-click handler to select search center coordinates (prevent accidental shifts)
+    map.on("dblclick", (e: L.LeafletMouseEvent) => {
       if (onMapClick) {
         onMapClick(e.latlng.lat, e.latlng.lng);
       }
     });
 
+    // Toggle scroll wheel zooming based on Ctrl key
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey) {
+        map.scrollWheelZoom.enable();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (!e.ctrlKey) {
+        map.scrollWheelZoom.disable();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
     markerGroupRef.current = markerGroup;
     setMapInstance(map);
 
-    // Clean up on unmount
+    // Clean up on unmount and reset refs to prevent memory leaks or stale layer collisions
     return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       map.remove();
+      circleRef.current = null;
+      centerMarkerRef.current = null;
+      markerGroupRef.current = null;
+      tileLayerRef.current = null;
+      markersMapRef.current.clear();
+      setMapInstance(null);
     };
   }, []);
 
@@ -312,17 +340,31 @@ export default function InteractiveMap({
       <div ref={mapContainerRef} className="z-0 flex-1 w-full min-h-0" />
       
       {/* Visual floating helper card for zoom/scale info */}
-      <div className="absolute top-3.5 left-3.5 z-10 pointer-events-none hidden sm:flex flex-col gap-1 px-3 py-2 bg-white/90 backdrop-blur-md border border-zinc-200/50 rounded-lg shadow-sm text-[10px] font-bold text-zinc-800 dark:bg-[#272729]/90 dark:border-zinc-800 dark:text-zinc-200">
+      <div className="absolute top-3.5 left-3.5 z-10 pointer-events-none hidden sm:flex flex-col gap-1.5 px-3 py-2.5 bg-white/90 backdrop-blur-md border border-zinc-200/50 rounded-lg shadow-sm text-[10px] font-bold text-zinc-800 dark:bg-[#272729]/90 dark:border-zinc-800 dark:text-zinc-200">
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 bg-zinc-900 dark:bg-zinc-100 rounded-full animate-pulse" />
           <span>Zone active</span>
         </div>
-        <span className="text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-          Rayon : {radius === 0.5 ? "500 m" : `${radius} km`}
-        </span>
+        <div className="flex flex-col gap-0.5 text-[9px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+          <span>Rayon : {radius === 0.5 ? "500 m" : `${radius} km`}</span>
+          <span className="normal-case tracking-normal font-medium text-zinc-500/80 dark:text-zinc-400/80 flex flex-col gap-1 mt-1 border-t border-zinc-100 pt-1 dark:border-zinc-800/80">
+            <span className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 shrink-0 text-zinc-400">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+              </svg>
+              Ctrl + Molette pour zoomer
+            </span>
+            <span className="flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 shrink-0 text-zinc-400">
+                <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 003.051 2.206l.018.008.007.003zM10 13a4 4 0 100-8 4 4 0 000 8z" clipRule="evenodd" />
+              </svg>
+              Double-clic pour cibler
+            </span>
+          </span>
+        </div>
       </div>
       <p className="pointer-events-none absolute bottom-3 right-3 z-10 max-w-[10rem] rounded-md bg-white/90 px-2 py-1 text-center text-[9px] font-medium leading-tight text-zinc-500 backdrop-blur-sm dark:bg-zinc-900/80 dark:text-zinc-400 lg:hidden">
-        Touchez la carte pour cibler une zone
+        Double-touchez pour cibler une zone
       </p>
     </div>
   );

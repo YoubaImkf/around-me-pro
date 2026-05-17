@@ -249,7 +249,6 @@ export default function Home() {
     setMapCenter([lat, lng]);
     const coordLabel = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     setCurrentCity(coordLabel);
-    executeSearch(coordLabel, currentRadius, selectedCategoryIds, 1, [lat, lng], onlyActive);
   };
 
   const handleCitySelect = (cityName: string, coordinates: [number, number]) => {

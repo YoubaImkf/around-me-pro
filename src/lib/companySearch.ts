@@ -101,6 +101,30 @@ export function normalizeCompanies(
     .filter((company: any) => company !== null) as Company[];
 }
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchWithRetry(url: string, init?: RequestInit, retries = 3, backoff = 250): Promise<Response> {
+  let lastError: Error | null = null;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(url, init);
+      if (response.status === 429) {
+        console.warn(`[API Rate Limit] Got 429 for ${url}. Retrying attempt ${attempt}/${retries} after ${backoff}ms...`);
+        await delay(backoff);
+        backoff *= 2.5;
+        continue;
+      }
+      return response;
+    } catch (err: any) {
+      lastError = err;
+      console.error(`[API Network Error] Attempt ${attempt}/${retries} failed:`, err);
+      await delay(backoff);
+      backoff *= 2.5;
+    }
+  }
+  throw lastError || new Error(`Failed to fetch after ${retries} attempts`);
+}
+
 export async function fetchDinumPage(
   params: SearchParams,
   page: number
@@ -120,7 +144,7 @@ export async function fetchDinumPage(
     queryParams.append("activite_principale", params.naf.replace(/\s+/g, ""));
   }
 
-  const companyRes = await fetch(
+  const companyRes = await fetchWithRetry(
     `https://recherche-entreprises.api.gouv.fr/near_point?${queryParams.toString()}`,
     {
       headers: { "User-Agent": "AroundMePro/1.0" },
@@ -165,6 +189,66 @@ export async function collectEstablishments(
   totalEstablishments: number;
   isEstablishmentCountExact: boolean;
 }> {
+  const naf = params.naf || "";
+  const nafCodes = naf.includes(",")
+    ? naf.split(",").map((c) => c.trim()).filter(Boolean)
+    : [naf];
+
+  if (nafCodes.length > 1) {
+    // Concurrent multi-NAF search aggregation!
+    const results = await Promise.all(
+      nafCodes.map(async (code) => {
+        const subParams = { ...params, naf: code };
+        return collectEstablishments(subParams, {
+          establishmentPage: 1,
+          perPage: Number.MAX_SAFE_INTEGER,
+          fetchAll: true
+        });
+      })
+    );
+
+    const companyMap = new Map<string, Company>();
+    const establishmentMap = new Map<string, any>();
+
+    for (const res of results) {
+      for (const comp of res.companies) {
+        companyMap.set(comp.siren, comp);
+      }
+      for (const row of res.establishments) {
+        establishmentMap.set(row.etab.siret, row);
+      }
+    }
+
+    const allCompanies = Array.from(companyMap.values());
+    const allEstablishments = Array.from(establishmentMap.values());
+
+    // Sort combined establishments by distance (closest first)
+    allEstablishments.sort((a, b) => (a.etab.distance ?? 0) - (b.etab.distance ?? 0));
+
+    const totalCompanies = allCompanies.length;
+    const totalEstablishments = allEstablishments.length;
+
+    const { establishmentPage, perPage, fetchAll = false } = options;
+    const targetStart = fetchAll ? 0 : (establishmentPage - 1) * perPage;
+    const targetEnd = fetchAll ? Number.MAX_SAFE_INTEGER : targetStart + perPage;
+
+    const pageSlice = allEstablishments.slice(targetStart, targetEnd);
+
+    // Keep companies aligned with the page slice
+    const activeSirens = new Set(pageSlice.map((row) => row.company.siren));
+    const activeCompanies = allCompanies.filter((c) => activeSirens.has(c.siren));
+
+    return {
+      companies: activeCompanies,
+      establishments: pageSlice,
+      totalCompanies,
+      totalCompanyPages: fetchAll ? 1 : Math.max(1, Math.ceil(totalEstablishments / perPage)),
+      totalEstablishments,
+      isEstablishmentCountExact: true
+    };
+  }
+
+  // Single NAF (or no NAF) default path:
   const { establishmentPage, perPage, fetchAll = false } = options;
   const targetStart = fetchAll ? 0 : (establishmentPage - 1) * perPage;
   const targetEnd = fetchAll ? Number.MAX_SAFE_INTEGER : targetStart + perPage;
@@ -176,6 +260,10 @@ export async function collectEstablishments(
   let companyPage = 1;
 
   while (companyPage <= totalCompanyPages && companyPage <= MAX_COMPANY_PAGES) {
+    if (companyPage > 1) {
+      // Proactive rate-limit avoidance: sleep 80ms before fetching next page
+      await delay(80);
+    }
     const pageResult = await fetchDinumPage(params, companyPage);
     totalCompanies = pageResult.totalCompanies;
     totalCompanyPages = pageResult.totalCompanyPages;

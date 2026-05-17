@@ -77,7 +77,7 @@ function PlaceholderPanel({
   const borderClass =
     variant === "error"
       ? "border-rose-200/50 bg-rose-50/30 dark:border-rose-900/40 dark:bg-rose-950/10"
-      : "border-zinc-200/80 bg-white dark:border-zinc-800 dark:bg-zinc-900/30";
+      : "border-zinc-200/80 bg-white dark:border-zinc-800/80 dark:bg-[#18181b]";
 
   return (
     <div className={`rounded-xl border p-8 text-center ${borderClass}`}>
@@ -235,7 +235,7 @@ export default function SearchResults({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+      <div className="rounded-xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800/80 dark:bg-[#18181b]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 space-y-2.5">
             <div className="flex flex-wrap items-center gap-2.5">
@@ -342,8 +342,8 @@ export default function SearchResults({
                 onClick={() => onSelectEstablishment(company, etab)}
                 className={`cursor-pointer rounded-xl border p-4 transition-colors sm:p-5 ${
                   isSelected
-                    ? "border-zinc-900 bg-zinc-50/80 ring-1 ring-zinc-900/10 dark:border-zinc-100 dark:bg-zinc-800/50"
-                    : "border-zinc-200/80 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:border-zinc-700"
+                    ? "border-zinc-900 bg-zinc-50/80 ring-1 ring-zinc-900/10 dark:border-zinc-200 dark:bg-[#27272a] dark:ring-1 dark:ring-zinc-100/10"
+                    : "border-zinc-200/80 bg-white hover:border-zinc-300 dark:border-zinc-800/80 dark:bg-[#18181b] dark:hover:border-zinc-700/80 dark:hover:bg-[#1e1e21]"
                 }`}
               >
                 <header className="mb-3 min-w-0">
@@ -462,7 +462,7 @@ export default function SearchResults({
                     e.stopPropagation();
                     setDetailsOpen((prev) => ({ ...prev, [etab.siret]: !prev[etab.siret] }));
                   }}
-                  className="flex w-full items-center justify-between border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:border-zinc-800"
+                  className="flex w-full cursor-pointer items-center justify-between border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:border-zinc-800 dark:hover:text-zinc-200 transition-colors"
                 >
                   <span>Identifiants administratifs</span>
                   <svg
@@ -505,7 +505,7 @@ export default function SearchResults({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="touch-target-inline flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                    className="touch-target-inline cursor-pointer flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800/60 active:scale-[0.98] transition-all"
                   >
                     Itinéraire
                   </a>
@@ -514,7 +514,7 @@ export default function SearchResults({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="touch-target-inline flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                    className="touch-target-inline cursor-pointer flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800/60 active:scale-[0.98] transition-all"
                   >
                     Fiche
                   </a>
@@ -536,7 +536,7 @@ export default function SearchResults({
                 onPerPageChange(v === "all" ? "all" : (parseInt(v, 10) as PageSizeOption));
               }}
               disabled={loading}
-              className="min-h-[44px] flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium dark:border-zinc-700 dark:bg-zinc-900 sm:flex-none sm:min-w-[100px]"
+              className="min-h-[44px] cursor-pointer flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium dark:border-zinc-700 dark:bg-zinc-900 sm:flex-none sm:min-w-[100px]"
             >
               {PAGE_SIZE_OPTIONS.map((opt) => (
                 <option key={String(opt.value)} value={opt.value}>
@@ -552,18 +552,18 @@ export default function SearchResults({
                 type="button"
                 disabled={pagination.page <= 1 || loading}
                 onClick={() => onPageChange(pagination.page - 1)}
-                className="touch-target-inline flex-1 min-h-[44px] rounded-xl border border-zinc-200 px-4 text-xs font-semibold active:scale-95 disabled:opacity-40 dark:border-zinc-700 sm:flex-none"
+                className="touch-target-inline cursor-pointer flex-1 min-h-[44px] rounded-xl border border-zinc-200 px-4 text-xs font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
               >
                 Préc.
               </button>
-              <span className="shrink-0 px-2 text-xs text-zinc-500">
+              <span className="shrink-0 px-2 text-xs text-zinc-500 font-mono">
                 {pagination.page}/{pagination.totalPages}
               </span>
               <button
                 type="button"
                 disabled={pagination.page >= pagination.totalPages || loading}
                 onClick={() => onPageChange(pagination.page + 1)}
-                className="touch-target-inline flex-1 min-h-[44px] rounded-xl border border-zinc-200 px-4 text-xs font-semibold active:scale-95 disabled:opacity-40 dark:border-zinc-700 sm:flex-none"
+                className="touch-target-inline cursor-pointer flex-1 min-h-[44px] rounded-xl border border-zinc-200 px-4 text-xs font-semibold hover:bg-zinc-50 dark:border-zinc-700 dark:hover:bg-zinc-800/60 active:scale-95 transition-all disabled:opacity-40 disabled:pointer-events-none"
               >
                 Suiv.
               </button>
