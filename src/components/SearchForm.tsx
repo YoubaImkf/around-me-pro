@@ -20,14 +20,44 @@ interface SearchFormProps {
 }
 
 interface CitySuggestion {
-  nom: string;
-  code: string;
-  codesPostaux: string[];
-  centre?: {
-    type: string;
-    coordinates: [number, number];
-  };
+  id: string;
+  label: string;
+  type: string;
+  postcode: string;
+  city: string;
+  context: string;
+  coordinates: [number, number]; // [lng, lat]
 }
+
+const getLocationTypeLabel = (type: string) => {
+  switch (type) {
+    case "housenumber":
+      return "Numéro";
+    case "street":
+      return "Rue";
+    case "municipality":
+      return "Ville";
+    case "locality":
+      return "Lieu-dit";
+    default:
+      return "Adresse";
+  }
+};
+
+const getLocationTypeClasses = (type: string) => {
+  switch (type) {
+    case "housenumber":
+      return "bg-blue-50 text-blue-700 border-blue-200/50 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/40";
+    case "street":
+      return "bg-purple-50 text-purple-700 border-purple-200/50 dark:bg-purple-950/40 dark:text-purple-300 dark:border-purple-800/40";
+    case "municipality":
+      return "bg-emerald-50 text-emerald-700 border-emerald-200/50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40";
+    case "locality":
+      return "bg-amber-50 text-amber-700 border-amber-200/50 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40";
+    default:
+      return "bg-zinc-50 text-zinc-700 border-zinc-200/50 dark:bg-zinc-950/40 dark:text-zinc-300 dark:border-zinc-800/40";
+  }
+};
 
 export default function SearchForm({
   city,
@@ -106,7 +136,7 @@ export default function SearchForm({
   const radiusInputId = useId();
   const jobInputId = useId();
 
-  // Handle City Autocomplete via public French Government API (geo.api.gouv.fr)
+  // Handle Precise Location Autocomplete via French National Address Database API (BAN)
   useEffect(() => {
     const trimmedQuery = cityInput.trim();
     if (trimmedQuery.length < 2) {
@@ -119,9 +149,9 @@ export default function SearchForm({
     const timer = setTimeout(async () => {
       try {
         const response = await fetch(
-          `https://geo.api.gouv.fr/communes?nom=${encodeURIComponent(
+          `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(
             trimmedQuery
-          )}&limit=5&fields=nom,code,codesPostaux,centre&boost=population`,
+          )}&limit=5&autocomplete=1`,
           { 
             headers: { "User-Agent": "AroundMePro/1.0" },
             signal: abortController.signal
@@ -129,11 +159,20 @@ export default function SearchForm({
         );
         if (response.ok) {
           const data = await response.json();
-          setCitySuggestions(data);
+          const suggestions = (data.features || []).map((feat: any) => ({
+            id: feat.properties.id || feat.properties.label,
+            label: feat.properties.label,
+            type: feat.properties.type,
+            postcode: feat.properties.postcode || "",
+            city: feat.properties.city || "",
+            context: feat.properties.context || "",
+            coordinates: feat.geometry?.coordinates // [lng, lat]
+          }));
+          setCitySuggestions(suggestions);
         }
       } catch (err: any) {
         if (err.name !== "AbortError") {
-          console.error("City autocomplete fetch failed", err);
+          console.error("Location autocomplete fetch failed", err);
         }
       }
     }, 250); // Fast 250ms debounce
@@ -217,18 +256,15 @@ export default function SearchForm({
   };
 
   const handleSelectCity = (suggestion: CitySuggestion) => {
-    setCityInput(suggestion.nom);
+    setCityInput(suggestion.label);
     setIsCityDropdownOpen(false);
     setCitySuggestions([]); // Clear suggestions to prevent reopening immediately
     setCityFocusedIndex(-1);
     
-    // Optional: Only refocus if strictly necessary, otherwise it might re-trigger the dropdown
-    // cityInputRef.current?.focus();
-
-    if (suggestion.centre?.coordinates) {
-      const [lng, lat] = suggestion.centre.coordinates;
+    if (suggestion.coordinates) {
+      const [lng, lat] = suggestion.coordinates;
       if (onCitySelect) {
-        onCitySelect(suggestion.nom, [lat, lng]);
+        onCitySelect(suggestion.label, [lat, lng]);
       }
     }
   };
@@ -313,7 +349,7 @@ export default function SearchForm({
           >
             {citySuggestions.map((suggestion, index) => (
               <div
-                key={suggestion.code}
+                key={suggestion.id}
                 role="option"
                 aria-selected={index === cityFocusedIndex}
                 onMouseDown={(e) => {
@@ -331,13 +367,16 @@ export default function SearchForm({
                     : ""
                 }`}
               >
-                <div className="flex flex-col">
-                  <span className="font-bold text-zinc-900 dark:text-zinc-50 text-sm">
-                    {suggestion.nom}
+                <div className="flex flex-col gap-1">
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-50 text-sm">
+                    {suggestion.label}
                   </span>
-                  <span className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    {suggestion.codesPostaux?.[0] || ""} - {suggestion.code.substring(0, 2)}
-                  </span>
+                  <div className="flex items-center gap-2 text-[10px] text-zinc-500 dark:text-zinc-400">
+                    <span className={`inline-flex items-center rounded-md border px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${getLocationTypeClasses(suggestion.type)}`}>
+                      {getLocationTypeLabel(suggestion.type)}
+                    </span>
+                    <span className="truncate">{suggestion.context}</span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -384,7 +423,7 @@ export default function SearchForm({
                   setRadiusInputString(val.toString());
                   if (onRadiusChange) onRadiusChange(val);
                 }}
-                className={`min-h-9 cursor-pointer rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all ${
+                className={`min-h-9 cursor-pointer rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${
                   isActive
                     ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100"
                     : "bg-zinc-50/50 hover:bg-zinc-100 text-zinc-500 border-zinc-200/40 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 dark:text-zinc-400 dark:border-zinc-800/60"
@@ -476,7 +515,7 @@ export default function SearchForm({
                         setSelectedCategoryIds([...selectedCategoryIds, category.id]);
                       }
                     }}
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 border rounded-md text-[10px] font-bold transition-all ${
+                    className={`inline-flex cursor-pointer items-center gap-1 px-2.5 py-1 border rounded-md text-[10px] font-bold transition-all ${
                       isSelected
                         ? "bg-zinc-900 border-zinc-900 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-900 shadow-xs"
                         : "bg-white border-zinc-200 text-zinc-700 hover:border-zinc-400 hover:bg-zinc-50 dark:bg-zinc-900/10 dark:border-zinc-800 dark:text-zinc-300 dark:hover:border-zinc-600 dark:hover:bg-zinc-800/40"
@@ -501,7 +540,7 @@ export default function SearchForm({
       <button
         type="submit"
         disabled={loading}
-        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-900/60 dark:disabled:text-zinc-600 sm:py-4 sm:text-lg"
+        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-xl bg-zinc-900 px-4 py-3.5 text-base font-bold text-white shadow-md transition-all hover:bg-zinc-800 hover:shadow-lg active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white dark:disabled:bg-zinc-900/60 dark:disabled:text-zinc-600 sm:py-4 sm:text-lg"
       >
         {loading ? (
           <>

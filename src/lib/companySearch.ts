@@ -231,8 +231,9 @@ export async function geocodeCity(city: string): Promise<{
   name: string;
   postcode: string;
 }> {
+  const cleanCity = city.replace(/^📍\s*/, "").trim();
   const geocodeRes = await fetch(
-    `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(city)}&type=municipality&limit=1`,
+    `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(cleanCity)}&limit=1`,
     { headers: { "User-Agent": "AroundMePro/1.0" } }
   );
 
@@ -250,7 +251,7 @@ export async function geocodeCity(city: string): Promise<{
   return {
     lon: coords[0],
     lat: coords[1],
-    name: topFeature.properties.name,
-    postcode: topFeature.properties.postcode
+    name: topFeature.properties.label || topFeature.properties.name,
+    postcode: topFeature.properties.postcode || ""
   };
 }

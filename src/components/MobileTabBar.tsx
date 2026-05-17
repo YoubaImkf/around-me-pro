@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 
 export type MobileView = "search" | "results" | "map";
 
@@ -51,6 +51,12 @@ export default function MobileTabBar({
   hasResults,
   resultsBadge
 }: MobileTabBarProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-zinc-200/80 bg-white/95 backdrop-blur-lg dark:border-zinc-800 dark:bg-[#121214]/95 lg:hidden"
@@ -61,20 +67,22 @@ export default function MobileTabBar({
         {tabs.map((tab) => {
           const isActive = activeView === tab.id;
           const disabled = tab.id === "results" && !hasResults;
+          // Avoid hydration mismatch by waiting until mounted to set the disabled attribute.
+          const isButtonDisabled = mounted ? disabled : false;
 
           return (
             <button
               key={tab.id}
               type="button"
-              disabled={disabled}
+              disabled={isButtonDisabled || undefined}
               onClick={() => onViewChange(tab.id)}
               aria-current={isActive ? "page" : undefined}
-              className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-2 text-[10px] font-semibold transition-colors ${
+              className={`relative flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-2 text-[10px] font-semibold transition-all duration-250 ${
                 isActive
-                  ? "text-zinc-900 dark:text-zinc-50"
+                  ? "text-zinc-900 dark:text-zinc-50 active:scale-95"
                   : disabled
                     ? "cursor-not-allowed text-zinc-300 dark:text-zinc-600"
-                    : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    : "text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 active:scale-95"
               }`}
             >
               <span className="relative">

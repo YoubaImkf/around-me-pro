@@ -175,7 +175,7 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
               type="button"
               onClick={clearSelection}
               aria-label="Retirer le filtre d'activité"
-              className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-200/60 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
+              className="mt-0.5 cursor-pointer flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-zinc-400 transition-colors hover:bg-zinc-200/60 hover:text-zinc-700 dark:hover:bg-zinc-800 dark:hover:text-zinc-200"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -191,7 +191,7 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
           <button
             type="button"
             onClick={openSearch}
-            className="self-start text-[10px] font-bold text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
+            className="cursor-pointer self-start text-[10px] font-bold text-zinc-500 underline-offset-2 hover:text-zinc-800 hover:underline dark:text-zinc-400 dark:hover:text-zinc-200"
           >
             Changer d&apos;activité
           </button>
@@ -246,7 +246,7 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
                 tabIndex={-1}
                 onClick={clearSelection}
                 aria-label="Effacer la recherche"
-                className="absolute right-8 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+                className="absolute right-8 top-1/2 -translate-y-1/2 cursor-pointer text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -266,7 +266,7 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
                 setIsOpen((prev) => !prev);
                 if (!isOpen) inputRef.current?.focus();
               }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none dark:text-zinc-500 dark:hover:text-zinc-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-zinc-400 hover:text-zinc-600 focus:outline-none dark:text-zinc-500 dark:hover:text-zinc-400"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"

@@ -154,7 +154,7 @@ export default function CategorySelector({
                     handleRemoveCategory(cat.id, e);
                   }
                 }}
-                className="w-3.5 h-3.5 rounded-sm flex items-center justify-center font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none"
+                className="w-3.5 h-3.5 cursor-pointer rounded-sm flex items-center justify-center font-bold hover:bg-black/5 dark:hover:bg-white/5 transition-colors focus:outline-none"
               >
                 &times;
               </button>
@@ -196,7 +196,7 @@ export default function CategorySelector({
           tabIndex={-1}
           aria-label="Afficher les options"
           onClick={() => setIsOpen((prev) => !prev)}
-          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 focus:outline-none dark:text-zinc-500 dark:hover:text-zinc-400"
+          className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer text-zinc-400 hover:text-zinc-600 focus:outline-none dark:text-zinc-500 dark:hover:text-zinc-400"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

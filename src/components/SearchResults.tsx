@@ -235,48 +235,50 @@ export default function SearchResults({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="rounded-xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="space-y-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-50">Établissements</h3>
-              <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+      <div className="rounded-xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/40">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="flex-1 space-y-2.5">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-50">Établissements</h3>
+              <span className="rounded-lg bg-zinc-100 px-2.5 py-1 text-xs font-semibold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                 {formatCount(pagination.totalEstablishments)}
                 {!pagination.isEstablishmentCountExact && "+"}
               </span>
             </div>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              {rangeStart > 0 && (
-                <>
-                  Affichage {rangeStart}–{rangeEnd} sur{" "}
-                  {pagination.isEstablishmentCountExact
-                    ? formatCount(pagination.totalEstablishments)
-                    : `au moins ${formatCount(pagination.totalEstablishments)}`}{" "}
-                  établissement{pagination.totalEstablishments > 1 ? "s" : ""}
-                  {" · "}
-                </>
-              )}
-              {formatCount(pagination.totalCompanies)} entreprise
-              {pagination.totalCompanies > 1 ? "s" : ""} correspondante
-              {pagination.totalCompanies > 1 ? "s" : ""}
-            </p>
-            <p className="hidden text-[11px] text-zinc-400 dark:text-zinc-500 sm:block">
-              L&apos;export inclut{" "}
-              <span className="font-medium text-zinc-600 dark:text-zinc-300">tous les résultats</span>.
-            </p>
+            <div className="space-y-1">
+              <p className="text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">
+                {rangeStart > 0 && (
+                  <>
+                    Affichage {rangeStart}–{rangeEnd} sur{" "}
+                    {pagination.isEstablishmentCountExact
+                      ? formatCount(pagination.totalEstablishments)
+                      : `au moins ${formatCount(pagination.totalEstablishments)}`}{" "}
+                    établissement{pagination.totalEstablishments > 1 ? "s" : ""}
+                    {" · "}
+                  </>
+                )}
+                {formatCount(pagination.totalCompanies)} entreprise
+                {pagination.totalCompanies > 1 ? "s" : ""} correspondante
+                {pagination.totalCompanies > 1 ? "s" : ""}
+              </p>
+              <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+                L&apos;export inclut{" "}
+                <span className="font-medium text-zinc-600 dark:text-zinc-300">tous les résultats</span>.
+              </p>
+            </div>
           </div>
 
           {onOpenMap && (
             <button
               type="button"
               onClick={onOpenMap}
-              className="touch-target-inline flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 text-xs font-semibold text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-200 sm:hidden"
+              className="touch-target-inline flex w-full items-center justify-center gap-2 rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-xs font-semibold text-zinc-800 dark:border-zinc-700 dark:bg-zinc-800/50 dark:text-zinc-200 sm:hidden"
             >
               Voir sur la carte
             </button>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 sm:flex-nowrap">
             <select
               value={`${sortField}-${sortOrder}`}
               onChange={(e) => {
@@ -285,7 +287,7 @@ export default function SearchResults({
                 setSortOrder(o);
               }}
               aria-label="Trier les résultats"
-              className="min-h-11 flex-1 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+              className="min-h-[44px] flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 sm:flex-none sm:min-w-[140px]"
             >
               <option value="name-asc">Nom A→Z</option>
               <option value="name-desc">Nom Z→A</option>
@@ -298,16 +300,16 @@ export default function SearchResults({
               type="button"
               onClick={handleExport}
               disabled={exporting || !exportParams}
-              className="touch-target-inline inline-flex min-w-[7rem] flex-1 items-center justify-center gap-1.5 rounded-xl bg-zinc-900 px-3 text-xs font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:flex-none"
+              className="touch-target-inline inline-flex min-h-[44px] min-w-[140px] flex-1 items-center justify-center gap-2 rounded-xl bg-zinc-900 px-4 text-xs font-semibold text-white transition hover:bg-zinc-800 active:scale-[0.98] disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white sm:flex-none"
             >
               {exporting ? (
                 <>
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white dark:border-zinc-900/30 dark:border-t-zinc-900" />
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white dark:border-zinc-900/30 dark:border-t-zinc-900" />
                   Export…
                 </>
               ) : (
                 <>
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
                     <path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" />
                     <path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" />
                   </svg>
@@ -317,7 +319,7 @@ export default function SearchResults({
             </button>
           </div>
         </div>
-        {exportError && <p className="mt-2 text-xs text-rose-600 dark:text-rose-400">{exportError}</p>}
+        {exportError && <p className="mt-3 text-xs text-rose-600 dark:text-zinc-400">{exportError}</p>}
       </div>
 
       <ul className="flex flex-col gap-2.5" role="list">
@@ -338,30 +340,32 @@ export default function SearchResults({
               <article
                 id={`etab-card-${etab.siret}`}
                 onClick={() => onSelectEstablishment(company, etab)}
-                className={`cursor-pointer rounded-xl border p-3 transition-colors sm:p-4 ${
+                className={`cursor-pointer rounded-xl border p-4 transition-colors sm:p-5 ${
                   isSelected
                     ? "border-zinc-900 bg-zinc-50/80 ring-1 ring-zinc-900/10 dark:border-zinc-100 dark:bg-zinc-800/50"
                     : "border-zinc-200/80 bg-white hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/30 dark:hover:border-zinc-700"
                 }`}
               >
-                <header className="mb-2 min-w-0 sm:mb-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="line-clamp-2 flex-1 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
-                      {displayName}
-                    </h4>
+                <header className="mb-3 min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1 space-y-1.5">
+                      <h4 className="line-clamp-2 text-sm font-semibold leading-snug text-zinc-900 dark:text-zinc-50">
+                        {displayName}
+                      </h4>
+                      <p className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
+                        {company.nomComplet}
+                      </p>
+                    </div>
                     {etab.distance != null && (
-                      <span className="shrink-0 rounded-md bg-zinc-100 px-2 py-0.5 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
+                      <span className="shrink-0 rounded-lg bg-zinc-100 px-2.5 py-1 text-[10px] font-bold text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300">
                         {etab.distance} km
                       </span>
                     )}
                   </div>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
-                    {company.nomComplet}
-                  </p>
-                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
                     {category && (
                       <span
-                        className="inline-flex max-w-[200px] truncate rounded-md border px-1.5 py-0.5 text-[10px] font-medium"
+                        className="inline-flex max-w-[200px] truncate rounded-lg border px-2 py-1 text-[10px] font-semibold"
                         style={{
                           backgroundColor: `${category.color}12`,
                           borderColor: `${category.color}30`,
@@ -372,7 +376,7 @@ export default function SearchResults({
                       </span>
                     )}
                     <span
-                      className={`inline-flex rounded-md border px-1.5 py-0.5 text-[10px] font-medium ${
+                      className={`inline-flex rounded-lg border px-2 py-1 text-[10px] font-semibold ${
                         isActive
                           ? "border-emerald-200/80 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400"
                           : "border-rose-200/80 bg-rose-50 text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-400"
@@ -381,63 +385,75 @@ export default function SearchResults({
                       {isActive ? "Actif" : "Fermé"}
                     </span>
                     {etab.estSiege && (
-                      <span className="inline-flex rounded-md border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400">
+                      <span className="inline-flex rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-1 text-[10px] font-semibold text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-400">
                         Siège
                       </span>
                     )}
                   </div>
                 </header>
 
-                <p className="text-xs font-medium leading-relaxed text-zinc-800 dark:text-zinc-200">
-                  {formatAddress(etab)}
-                </p>
+                <div className="mb-3 space-y-3">
+                  <p className="text-xs font-medium leading-relaxed text-zinc-800 dark:text-zinc-200">
+                    {formatAddress(etab)}
+                  </p>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setMoreInfoOpen((prev) => ({ ...prev, [etab.siret]: !prev[etab.siret] }));
-                  }}
-                  className="mt-2 flex min-h-11 w-full items-center justify-between rounded-lg text-xs font-medium text-zinc-500 sm:hidden"
-                >
-                  <span>{showMoreInfo ? "Moins" : "Activité et contact"}</span>
-                  <span aria-hidden>{showMoreInfo ? "▲" : "▼"}</span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setMoreInfoOpen((prev) => ({ ...prev, [etab.siret]: !prev[etab.siret] }));
+                    }}
+                    className="flex w-full items-center justify-between rounded-lg border border-zinc-100 bg-zinc-50/50 px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-800/30 dark:text-zinc-400 dark:hover:bg-zinc-800/50 sm:hidden"
+                  >
+                    <span>{showMoreInfo ? "Moins" : "Activité et contact"}</span>
+                    <span aria-hidden className="text-zinc-400">{showMoreInfo ? "▲" : "▼"}</span>
+                  </button>
 
-                {showMoreInfo && (
-                  <div className="mt-1 space-y-2 text-xs sm:hidden">
-                    <p className="font-medium text-zinc-800 dark:text-zinc-200">
-                      {getActivityLabel(etab, company)}
-                    </p>
+                  {showMoreInfo && (
+                    <div className="space-y-2.5 text-xs sm:hidden">
+                      <div>
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                          Activité
+                        </p>
+                        <p className="font-medium text-zinc-800 dark:text-zinc-200">
+                          {getActivityLabel(etab, company)}
+                        </p>
+                      </div>
+                      {hasContactInfo(etab) && (
+                        <div>
+                          <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                            Contact
+                          </p>
+                          <div className="flex flex-col gap-0.5 text-zinc-700 dark:text-zinc-300">
+                            {!/non communiqué/i.test(etab.telephone) && <span>{etab.telephone}</span>}
+                            {!/non communiqué/i.test(etab.email) && <span>{etab.email}</span>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="hidden space-y-3 text-xs sm:block">
+                    <div>
+                      <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                        Activité
+                      </p>
+                      <p className="font-medium text-zinc-800 dark:text-zinc-200">
+                        {getActivityLabel(etab, company)}
+                      </p>
+                    </div>
                     {hasContactInfo(etab) && (
-                      <div className="flex flex-col gap-0.5 text-zinc-700 dark:text-zinc-300">
-                        {!/non communiqué/i.test(etab.telephone) && <span>{etab.telephone}</span>}
-                        {!/non communiqué/i.test(etab.email) && <span>{etab.email}</span>}
+                      <div>
+                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
+                          Contact
+                        </p>
+                        <div className="flex flex-col gap-0.5 text-zinc-700 dark:text-zinc-300">
+                          {!/non communiqué/i.test(etab.telephone) && <span>{etab.telephone}</span>}
+                          {!/non communiqué/i.test(etab.email) && <span>{etab.email}</span>}
+                        </div>
                       </div>
                     )}
                   </div>
-                )}
-
-                <div className="mt-2 hidden space-y-2.5 text-xs sm:block">
-                  <div>
-                    <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
-                      Activité
-                    </p>
-                    <p className="font-medium text-zinc-800 dark:text-zinc-200">
-                      {getActivityLabel(etab, company)}
-                    </p>
-                  </div>
-                  {hasContactInfo(etab) && (
-                    <div>
-                      <p className="mb-0.5 text-[10px] font-semibold uppercase tracking-wide text-zinc-400">
-                        Contact
-                      </p>
-                      <div className="flex flex-col gap-0.5 text-zinc-700 dark:text-zinc-300">
-                        {!/non communiqué/i.test(etab.telephone) && <span>{etab.telephone}</span>}
-                        {!/non communiqué/i.test(etab.email) && <span>{etab.email}</span>}
-                      </div>
-                    </div>
-                  )}
                 </div>
 
                 <button
@@ -446,14 +462,14 @@ export default function SearchResults({
                     e.stopPropagation();
                     setDetailsOpen((prev) => ({ ...prev, [etab.siret]: !prev[etab.siret] }));
                   }}
-                  className="mt-3 flex min-h-11 w-full items-center justify-between border-t border-zinc-100 pt-2.5 text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:border-zinc-800"
+                  className="flex w-full items-center justify-between border-t border-zinc-100 pt-3 text-xs font-medium text-zinc-400 hover:text-zinc-600 dark:border-zinc-800"
                 >
                   <span>Identifiants administratifs</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
-                    className={`h-3.5 w-3.5 transition-transform ${showDetails ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 transition-transform ${showDetails ? "rotate-180" : ""}`}
                   >
                     <path
                       fillRule="evenodd"
@@ -463,7 +479,7 @@ export default function SearchResults({
                   </svg>
                 </button>
                 {showDetails && (
-                  <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 font-mono text-[10px] text-zinc-500">
+                  <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 font-mono text-[10px] text-zinc-500">
                     <div>
                       <dt className="text-zinc-400">SIRET</dt>
                       <dd>{etab.siret}</dd>
@@ -483,13 +499,13 @@ export default function SearchResults({
                   </dl>
                 )}
 
-                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-zinc-100 pt-3 dark:border-zinc-800">
+                <div className="mt-4 grid grid-cols-2 gap-3 border-t border-zinc-100 pt-4 dark:border-zinc-800">
                   <a
                     href={gMapsLink}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="touch-target-inline flex items-center justify-center rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                    className="touch-target-inline flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
                   >
                     Itinéraire
                   </a>
@@ -498,7 +514,7 @@ export default function SearchResults({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="touch-target-inline flex items-center justify-center rounded-xl border border-zinc-200 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
+                    className="touch-target-inline flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300"
                   >
                     Fiche
                   </a>
@@ -509,10 +525,10 @@ export default function SearchResults({
         })}
       </ul>
 
-      <div className="flex flex-col gap-3 border-t border-zinc-200/80 pt-4 dark:border-zinc-800">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <label className="flex min-h-11 flex-1 items-center gap-2 text-xs text-zinc-500">
-            <span className="shrink-0 font-medium">Par page</span>
+      <div className="flex flex-col gap-4 border-t border-zinc-200/80 pt-5 dark:border-zinc-800">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <label className="flex min-h-[44px] flex-1 items-center gap-3 text-xs text-zinc-500">
+            <span className="shrink-0 font-semibold">Par page</span>
             <select
               value={perPage}
               onChange={(e) => {
@@ -520,7 +536,7 @@ export default function SearchResults({
                 onPerPageChange(v === "all" ? "all" : (parseInt(v, 10) as PageSizeOption));
               }}
               disabled={loading}
-              className="min-h-11 flex-1 rounded-xl border border-zinc-200 bg-white px-3 text-xs font-medium dark:border-zinc-700 dark:bg-zinc-900"
+              className="min-h-[44px] flex-1 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium dark:border-zinc-700 dark:bg-zinc-900 sm:flex-none sm:min-w-[100px]"
             >
               {PAGE_SIZE_OPTIONS.map((opt) => (
                 <option key={String(opt.value)} value={opt.value}>
@@ -536,18 +552,18 @@ export default function SearchResults({
                 type="button"
                 disabled={pagination.page <= 1 || loading}
                 onClick={() => onPageChange(pagination.page - 1)}
-                className="touch-target-inline flex-1 rounded-xl border border-zinc-200 px-3 text-xs font-semibold disabled:opacity-40 dark:border-zinc-700 sm:flex-none"
+                className="touch-target-inline flex-1 min-h-[44px] rounded-xl border border-zinc-200 px-4 text-xs font-semibold active:scale-95 disabled:opacity-40 dark:border-zinc-700 sm:flex-none"
               >
                 Préc.
               </button>
-              <span className="shrink-0 text-xs text-zinc-500">
+              <span className="shrink-0 px-2 text-xs text-zinc-500">
                 {pagination.page}/{pagination.totalPages}
               </span>
               <button
                 type="button"
                 disabled={pagination.page >= pagination.totalPages || loading}
                 onClick={() => onPageChange(pagination.page + 1)}
-                className="touch-target-inline flex-1 rounded-xl border border-zinc-200 px-3 text-xs font-semibold disabled:opacity-40 dark:border-zinc-700 sm:flex-none"
+                className="touch-target-inline flex-1 min-h-[44px] rounded-xl border border-zinc-200 px-4 text-xs font-semibold active:scale-95 disabled:opacity-40 dark:border-zinc-700 sm:flex-none"
               >
                 Suiv.
               </button>

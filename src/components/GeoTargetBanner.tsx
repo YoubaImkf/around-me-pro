@@ -22,7 +22,7 @@ export default function GeoTargetBanner({ coordinates, onReset }: GeoTargetBanne
       <button
         type="button"
         onClick={onReset}
-        className="touch-target-inline shrink-0 rounded-lg border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+        className="touch-target-inline cursor-pointer shrink-0 rounded-lg border border-zinc-200 bg-white px-3 text-[11px] font-bold text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
       >
         Réinitialiser
       </button>
