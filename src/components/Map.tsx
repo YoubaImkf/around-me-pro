@@ -278,7 +278,7 @@ export default function InteractiveMap({
         });
       });
     });
-  }, [companies, onSelectEstablishment, selectedSiret]);
+  }, [mapInstance, companies.length, onSelectEstablishment, selectedSiret]);
 
   // Handle selectedSiret changes (highlight and center on selected marker)
   useEffect(() => {
