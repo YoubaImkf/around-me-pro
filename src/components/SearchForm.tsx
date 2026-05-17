@@ -298,7 +298,7 @@ export default function SearchForm({
           htmlFor={cityInputRef.current?.id || cityInputId}
           className="block text-xs font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500 mb-1.5"
         >
-          Ville en France
+          Adresse, ville ou code postal
         </label>
         <div className="relative">
           <input
@@ -321,7 +321,7 @@ export default function SearchForm({
               setTimeout(() => setIsCityDropdownOpen(false), 200);
             }}
             onKeyDown={handleCityKeyDown}
-            placeholder="Ex: Paris, Lyon, Bordeaux..."
+            placeholder="Ex: 8 rue des Champs, 59290, Wasquehal..."
             className="min-h-11 w-full rounded-xl border border-zinc-200 bg-white pl-9 pr-3.5 text-sm font-medium text-zinc-900 shadow-xs transition-all placeholder-zinc-400 focus:border-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-400 dark:border-zinc-800 dark:bg-[#1a1a1c] dark:text-zinc-100 dark:focus:border-zinc-600 dark:focus:ring-zinc-600"
           />
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 dark:text-zinc-500">

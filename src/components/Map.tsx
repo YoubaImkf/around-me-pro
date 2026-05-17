@@ -254,7 +254,7 @@ export default function InteractiveMap({
             <h4 class="text-xs font-black text-zinc-950 dark:text-zinc-50 leading-tight mb-0.5">
               ${displayName}
             </h4>
-            <p class="text-[9px] text-zinc-400 dark:text-zinc-500 mb-1">${company.nomComplet}</p>
+            <p class="text-[9px] text-zinc-400 dark:text-zinc-500 mb-1">Raison sociale : ${company.nomComplet}</p>
             <p class="text-[10px] text-zinc-500 dark:text-zinc-400 leading-normal mb-2">
               ${formatAddress(etab)}
             </p>

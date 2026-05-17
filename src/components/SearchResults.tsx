@@ -353,7 +353,7 @@ export default function SearchResults({
                         {displayName}
                       </h4>
                       <p className="line-clamp-1 text-xs text-zinc-500 dark:text-zinc-400">
-                        {company.nomComplet}
+                        Raison sociale : {company.nomComplet}
                       </p>
                     </div>
                     {etab.distance != null && (

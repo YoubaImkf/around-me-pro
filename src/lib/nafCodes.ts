@@ -137,9 +137,15 @@ const searchIndex = NAF_CODES.map((entry) => ({
 }));
 
 export function getNafCodeByCode(code: string): NafCodeEntry | undefined {
-  const normalized = code.trim().replace(/\s+/g, "");
+  let normalized = code.trim().replace(/\s+/g, "").toUpperCase();
   if (!normalized) return undefined;
-  return nafByCode.get(normalized) ?? nafByCode.get(normalized.toUpperCase());
+
+  // Handle dot-less codes like "8891A" -> "88.91A"
+  if (normalized.length === 5 && !normalized.includes(".")) {
+    normalized = normalized.slice(0, 2) + "." + normalized.slice(2);
+  }
+
+  return nafByCode.get(normalized);
 }
 
 export function searchNafCodes(query: string, limit = MAX_RESULTS): NafCodeEntry[] {

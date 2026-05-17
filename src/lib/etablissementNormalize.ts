@@ -26,12 +26,35 @@ export function resolveEstablishmentName(etab: Record<string, unknown>, companyN
     return companyName;
   }
 
-  const commune = etab.libelle_commune;
-  if (typeof commune === "string" && commune.trim()) {
-    return `Établissement — ${commune.trim()}`;
-  }
-
   return companyName;
+}
+
+/** Clean up duplicate postcode, city, and redundant address tokens */
+export function cleanDuplicateAddressTokens(addr: string): string {
+  if (!addr) return "";
+  
+  let cleaned = addr.trim();
+  
+  // Dedup common patterns like "59290 WASQUEHAL, 59290 WASQUEHAL"
+  const tokens = cleaned.split(/,\s*/);
+  if (tokens.length >= 2) {
+    const uniqueTokens: string[] = [];
+    const seen = new Set<string>();
+    for (const token of tokens) {
+      const normalizedToken = token.trim().toLowerCase().replace(/\s+/g, " ");
+      if (normalizedToken && !seen.has(normalizedToken)) {
+        seen.add(normalizedToken);
+        uniqueTokens.push(token.trim());
+      }
+    }
+    cleaned = uniqueTokens.join(", ");
+  }
+  
+  // Dedup side-by-side postcode + city patterns: e.g. "59290 WASQUEHAL 59290 WASQUEHAL"
+  const postcodeCityPattern = /(\b\d{5}\b\s+[A-ZÀ-ÿ-]+)\s+\1/i;
+  cleaned = cleaned.replace(postcodeCityPattern, "$1");
+  
+  return cleaned;
 }
 
 /**
@@ -41,12 +64,12 @@ export function resolveEstablishmentName(etab: Record<string, unknown>, companyN
 export function resolvePostalAddress(etab: Record<string, unknown>): string {
   const adresse = etab.adresse;
   if (typeof adresse === "string" && adresse.trim()) {
-    return adresse.trim();
+    return cleanDuplicateAddressTokens(adresse.trim());
   }
 
   const geoAdresse = etab.geo_adresse;
   if (typeof geoAdresse === "string" && geoAdresse.trim()) {
-    return geoAdresse.trim();
+    return cleanDuplicateAddressTokens(geoAdresse.trim());
   }
 
   const lineParts: string[] = [];
@@ -69,23 +92,42 @@ export function resolvePostalAddress(etab: Record<string, unknown>): string {
 
   const cp = etab.code_postal;
   const ville = etab.libelle_commune;
-  const cityLine = [cp, ville]
-    .filter((p) => typeof p === "string" && (p as string).trim())
-    .map((p) => (p as string).trim())
-    .join(" ");
-  if (cityLine) lineParts.push(cityLine);
+  
+  const cpStr = typeof cp === "string" ? cp.trim() : "";
+  const villeStr = typeof ville === "string" ? ville.trim() : "";
+  
+  const reconstructedVoieComplement = lineParts.join(" ").toLowerCase();
+  
+  const hasCp = cpStr && reconstructedVoieComplement.includes(cpStr.toLowerCase());
+  const hasVille = villeStr && reconstructedVoieComplement.includes(villeStr.toLowerCase());
+  
+  if (cpStr || villeStr) {
+    const cityLineParts: string[] = [];
+    if (cpStr && !hasCp) cityLineParts.push(cpStr);
+    if (villeStr && !hasVille) cityLineParts.push(villeStr);
+    
+    const cityLine = cityLineParts.join(" ");
+    if (cityLine) lineParts.push(cityLine);
+  }
 
-  return lineParts.join(", ");
+  return cleanDuplicateAddressTokens(lineParts.join(", "));
 }
 
 export function resolveEstablishmentNaf(etab: Record<string, unknown>, companyNaf?: string): {
   codeNaf: string;
   libelleNaf: string;
 } {
-  const code =
+  const rawCode =
     (typeof etab.activite_principale === "string" && etab.activite_principale) ||
     companyNaf ||
     "Inconnu";
+  
+  // Format code to always have the dot (e.g., "8891A" -> "88.91A")
+  let code = rawCode.trim().replace(/\s+/g, "").toUpperCase();
+  if (code.length === 5 && !code.includes(".")) {
+    code = code.slice(0, 2) + "." + code.slice(2);
+  }
+
   const entry = getNafCodeByCode(code);
   return {
     codeNaf: code,
