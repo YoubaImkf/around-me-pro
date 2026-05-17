@@ -505,8 +505,15 @@ export default function SearchResults({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="touch-target-inline cursor-pointer flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800/60 active:scale-[0.98] transition-all"
+                    className={`group touch-target-inline cursor-pointer flex items-center justify-center rounded-xl border px-4 py-2.5 text-xs font-bold shadow-xs active:scale-[0.98] transition-all ${
+                      isSelected
+                        ? "border-zinc-300/80 bg-white text-zinc-700 hover:bg-zinc-100 hover:border-zinc-400 hover:text-zinc-950 dark:border-zinc-700 dark:bg-[#18181b] dark:text-zinc-300 dark:hover:bg-[#3f3f46] dark:hover:border-zinc-500 dark:hover:text-white"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 hover:text-zinc-950 dark:border-zinc-800/85 dark:bg-zinc-900/40 dark:text-zinc-300 dark:hover:bg-zinc-800/80 dark:hover:border-zinc-700 dark:hover:text-white"
+                    }`}
                   >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="mr-1.5 h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition-colors" aria-hidden>
+                      <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 003.051 2.206l.018.008.007.003zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                    </svg>
                     Itinéraire
                   </a>
                   <a
@@ -514,9 +521,16 @@ export default function SearchResults({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="touch-target-inline cursor-pointer flex items-center justify-center rounded-xl border border-zinc-200 px-4 py-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800/60 active:scale-[0.98] transition-all"
+                    className={`group touch-target-inline cursor-pointer flex items-center justify-center rounded-xl border px-4 py-2.5 text-xs font-bold shadow-xs active:scale-[0.98] transition-all ${
+                      isSelected
+                        ? "border-zinc-300/80 bg-white text-zinc-700 hover:bg-zinc-100 hover:border-zinc-400 hover:text-zinc-950 dark:border-zinc-700 dark:bg-[#18181b] dark:text-zinc-300 dark:hover:bg-[#3f3f46] dark:hover:border-zinc-500 dark:hover:text-white"
+                        : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50 hover:border-zinc-300 hover:text-zinc-950 dark:border-zinc-800/85 dark:bg-zinc-900/40 dark:text-zinc-300 dark:hover:bg-zinc-800/80 dark:hover:border-zinc-700 dark:hover:text-white"
+                    }`}
                   >
-                    Fiche
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="mr-1.5 h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-200 transition-colors" aria-hidden>
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+                    </svg>
+                    Fiche Info
                   </a>
                 </div>
               </article>
