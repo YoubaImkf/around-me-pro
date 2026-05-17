@@ -6,6 +6,7 @@ import AppHeader from "@/components/AppHeader";
 import GeoTargetBanner from "@/components/GeoTargetBanner";
 import MobileTabBar, { type MobileView } from "@/components/MobileTabBar";
 import SearchForm from "@/components/SearchForm";
+import AppFooter from "@/components/AppFooter";
 import SearchResults, {
   type ExportSearchParams,
   type PageSizeOption
@@ -340,15 +341,17 @@ export default function Home() {
         </div>
 
         {/* Desktop: sidebar + map */}
-        <div className="hidden lg:col-span-5 lg:flex lg:max-h-[calc(100dvh-var(--header-height)-2.5rem)] lg:flex-col lg:gap-4 lg:overflow-y-auto lg:pb-6 lg:pr-1 custom-scrollbar">
+        <div className="hidden lg:col-span-5 lg:flex lg:max-h-[calc(100dvh-var(--header-height)-6rem)] lg:flex-col lg:gap-4 lg:overflow-y-auto lg:pb-6 lg:pr-1 custom-scrollbar">
           {searchPanel}
           {resultsPanel}
         </div>
 
-        <div className="hidden lg:col-span-7 lg:block lg:h-[calc(100dvh-var(--header-height)-2.5rem)] lg:sticky lg:top-[calc(var(--header-height)+1.25rem)]">
+        <div className="hidden lg:col-span-7 lg:block lg:h-[calc(100dvh-var(--header-height)-6rem)] lg:sticky lg:top-[calc(var(--header-height)+1.25rem)]">
           {mapPanel}
         </div>
       </main>
+
+      <AppFooter />
 
       <MobileTabBar
         activeView={mobileView}

@@ -53,14 +53,37 @@ export default function AppHeader({
       <div className="flex shrink-0 items-center gap-3 sm:gap-4">
         {/* Beautiful connectivity pills */}
         <div className="hidden items-center gap-2 md:flex">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-zinc-50/50 px-2 py-0.5 text-[9px] font-bold text-zinc-500 dark:border-zinc-800/60 dark:bg-zinc-900/30 dark:text-zinc-400">
+          <a
+            href="https://adresse.data.gouv.fr/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-zinc-50/50 px-2.5 py-0.5 text-[9px] font-bold text-zinc-500 transition-all hover:scale-102 hover:border-zinc-300 hover:bg-zinc-100/50 hover:text-zinc-800 active:scale-95 dark:border-zinc-800/60 dark:bg-zinc-900/30 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-200"
+          >
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             BAN API
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-zinc-50/50 px-2 py-0.5 text-[9px] font-bold text-zinc-500 dark:border-zinc-800/60 dark:bg-zinc-900/30 dark:text-zinc-400">
+            
+            {/* Elegant Tooltip */}
+            <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-2.5 w-52 -translate-x-1/2 scale-95 rounded-lg border border-zinc-200 bg-white/95 p-2.5 text-left text-[10px] font-medium normal-case tracking-normal text-zinc-600 opacity-0 shadow-lg backdrop-blur-xs transition-all duration-200 group-hover:scale-100 group-hover:opacity-100 dark:border-zinc-800 dark:bg-zinc-900/95 dark:text-zinc-300">
+              <span className="mb-0.5 block font-bold text-zinc-900 dark:text-zinc-50">Base Adresse Nationale</span>
+              Service officiel de géocodage de l'État. Permet de suggérer des adresses et de localiser précisément les établissements sur la carte.
+            </span>
+          </a>
+
+          <a
+            href="https://api.gouv.fr/les-api/api-recherche-entreprises"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative inline-flex items-center gap-1.5 rounded-full border border-zinc-200/60 bg-zinc-50/50 px-2.5 py-0.5 text-[9px] font-bold text-zinc-500 transition-all hover:scale-102 hover:border-zinc-300 hover:bg-zinc-100/50 hover:text-zinc-800 active:scale-95 dark:border-zinc-800/60 dark:bg-zinc-900/30 dark:text-zinc-400 dark:hover:border-zinc-700 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-200"
+          >
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             DINUM API
-          </span>
+            
+            {/* Elegant Tooltip */}
+            <span className="pointer-events-none absolute top-full left-1/2 z-50 mt-2.5 w-52 -translate-x-1/2 scale-95 rounded-lg border border-zinc-200 bg-white/95 p-2.5 text-left text-[10px] font-medium normal-case tracking-normal text-zinc-600 opacity-0 shadow-lg backdrop-blur-xs transition-all duration-200 group-hover:scale-100 group-hover:opacity-100 dark:border-zinc-800 dark:bg-zinc-900/95 dark:text-zinc-300">
+              <span className="mb-0.5 block font-bold text-zinc-900 dark:text-zinc-50">API Recherche d'Entreprises</span>
+              Service de la Direction Interministérielle du Numérique. Permet d'interroger la base Sirene par géolocalisation et filtres.
+            </span>
+          </a>
         </div>
 
         <button
