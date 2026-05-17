@@ -300,7 +300,7 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
               {!hasQuery && (
                 <div className="border-b border-zinc-100 px-3 py-1.5 dark:border-zinc-900/40">
                   <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
-                    Suggestions fréquentes
+                    Toutes les activités
                   </span>
                 </div>
               )}
@@ -316,30 +316,23 @@ export default function NafCodeSelector({ value, onChange }: NafCodeSelectorProp
                     data-index={index}
                     onClick={() => selectEntry(entry)}
                     onMouseEnter={() => setFocusedIndex(index)}
-                    className={`cursor-pointer select-none border-b border-zinc-100 px-3 py-2.5 transition-colors last:border-0 dark:border-zinc-900/40 ${
+                    className={`cursor-pointer select-none border-b border-zinc-100 px-3 py-2 transition-colors last:border-0 dark:border-zinc-900/40 ${
                       isFocused ? "bg-zinc-50 dark:bg-zinc-900/50" : ""
                     }`}
                   >
-                    <div className="flex items-start gap-2.5">
-                      <span className="mt-0.5 shrink-0 rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 font-mono text-[10px] font-bold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
+                    <div className="flex items-center gap-2.5">
+                      <span className="shrink-0 rounded border border-zinc-200 bg-zinc-50 px-1.5 py-0.5 font-mono text-[10px] font-bold text-zinc-600 dark:border-zinc-700 dark:bg-zinc-900/60 dark:text-zinc-300">
                         {entry.code}
                       </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                          {entry.shortLabel}
-                        </p>
-                        {entry.shortLabel !== entry.label && (
-                          <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-zinc-400 dark:text-zinc-500">
-                            {entry.label}
-                          </p>
-                        )}
-                      </div>
+                      <span className="truncate text-xs font-bold text-zinc-900 dark:text-zinc-100 flex-1">
+                        {entry.shortLabel}
+                      </span>
                       {isSelected && (
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 20 20"
                           fill="currentColor"
-                          className="mt-0.5 h-3.5 w-3.5 shrink-0 text-zinc-900 dark:text-zinc-100"
+                          className="h-3.5 w-3.5 shrink-0 text-zinc-900 dark:text-zinc-100"
                           aria-hidden
                         >
                           <path

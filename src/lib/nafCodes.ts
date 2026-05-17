@@ -151,9 +151,7 @@ export function getNafCodeByCode(code: string): NafCodeEntry | undefined {
 export function searchNafCodes(query: string, limit = MAX_RESULTS): NafCodeEntry[] {
   const trimmed = query.trim();
   if (!trimmed) {
-    return POPULAR_NAF_CODES.map((code) => nafByCode.get(code)).filter(
-      (e): e is NafCodeEntry => Boolean(e)
-    );
+    return NAF_CODES;
   }
 
   const normalizedQuery = normalizeForSearch(trimmed);

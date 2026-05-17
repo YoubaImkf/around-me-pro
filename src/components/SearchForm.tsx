@@ -408,31 +408,33 @@ export default function SearchForm({
         </div>
         
         {/* Clean, minimal fast distance filters */}
-        <div className="flex items-center gap-1.5 mt-2 select-none">
-          <span className="text-[9px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mr-0.5">
-            Filtres rapides :
+        <div className="mt-2.5">
+          <span className="block text-[10px] font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
+            Filtres rapides
           </span>
-          {[1, 5, 10, 20].map((val) => {
-            const isActive = radiusState === val;
-            return (
-              <button
-                key={val}
-                type="button"
-                onClick={() => {
-                  setRadiusState(val);
-                  setRadiusInputString(val.toString());
-                  if (onRadiusChange) onRadiusChange(val);
-                }}
-                className={`min-h-9 cursor-pointer rounded-lg border px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${
-                  isActive
-                    ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100"
-                    : "bg-zinc-50/50 hover:bg-zinc-100 text-zinc-500 border-zinc-200/40 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 dark:text-zinc-400 dark:border-zinc-800/60"
-                }`}
-              >
-                {val} km
-              </button>
-            );
-          })}
+          <div className="flex flex-wrap items-center gap-2 select-none">
+            {[1, 5, 10, 20, 100].map((val) => {
+              const isActive = radiusState === val;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  onClick={() => {
+                    setRadiusState(val);
+                    setRadiusInputString(val.toString());
+                    if (onRadiusChange) onRadiusChange(val);
+                  }}
+                  className={`min-h-9 cursor-pointer rounded-lg border px-3.5 py-2 text-[11px] font-bold transition-all active:scale-95 ${
+                    isActive
+                      ? "bg-zinc-900 text-white border-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 dark:border-zinc-100"
+                      : "bg-zinc-50/50 hover:bg-zinc-100 text-zinc-500 border-zinc-200/40 dark:bg-zinc-900/30 dark:hover:bg-zinc-900/60 dark:text-zinc-400 dark:border-zinc-800/60"
+                  }`}
+                >
+                  {val} km
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
