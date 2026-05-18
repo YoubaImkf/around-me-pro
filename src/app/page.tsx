@@ -11,7 +11,13 @@ import SearchResults, {
   type ExportSearchParams,
   type PageSizeOption
 } from "@/components/SearchResults";
-import type { EstablishmentRow } from "@/lib/establishments";
+import {
+  formatAddress,
+  getEstablishmentDisplayName,
+  type EstablishmentRow
+} from "@/lib/establishments";
+import { getCategoryBySection } from "@/lib/categories";
+import { annuaireEtablissementUrl } from "@/lib/etablissementNormalize";
 import { SearchPagination } from "@/types/company";
 import { Company, Etablissement } from "@/types/company";
 
@@ -86,6 +92,88 @@ export default function Home() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [hasSearched, setHasSearched] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>("search");
+
+  const [selectedEstablishmentForMapSheet, setSelectedEstablishmentForMapSheet] = useState<{
+    company: Company;
+    etab: Etablissement;
+  } | null>(null);
+
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load saved state from localStorage on mount
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem("around_me_pro_cache");
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed.currentCity) setCurrentCity(parsed.currentCity);
+        if (parsed.currentRadius) setCurrentRadius(parsed.currentRadius);
+        if (parsed.selectedCategoryIds) setSelectedCategoryIds(parsed.selectedCategoryIds);
+        if (parsed.onlyActive !== undefined) setOnlyActive(parsed.onlyActive);
+        if (parsed.nafCode !== undefined) setNafCode(parsed.nafCode);
+        if (parsed.companies) setCompanies(parsed.companies);
+        if (parsed.establishments) setEstablishments(parsed.establishments);
+        if (parsed.pagination) setPagination(parsed.pagination);
+        if (parsed.perPage) setPerPage(parsed.perPage);
+        if (parsed.mapCenter) setMapCenter(parsed.mapCenter);
+        if (parsed.selectedSiret !== undefined) setSelectedSiret(parsed.selectedSiret);
+        if (parsed.customCenter !== undefined) setCustomCenter(parsed.customCenter);
+        if (parsed.lastTextCity !== undefined) setLastTextCity(parsed.lastTextCity);
+        if (parsed.hasSearched !== undefined) setHasSearched(parsed.hasSearched);
+        if (parsed.mobileView) setMobileView(parsed.mobileView);
+      }
+    } catch (e) {
+      console.error("Error loading cache:", e);
+      try {
+        localStorage.removeItem("around_me_pro_cache");
+      } catch (innerEx) {}
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // Save state to localStorage on state changes
+  useEffect(() => {
+    if (!isLoaded) return;
+    try {
+      const stateToCache = {
+        currentCity,
+        currentRadius,
+        selectedCategoryIds,
+        onlyActive,
+        nafCode,
+        companies,
+        establishments,
+        pagination,
+        perPage,
+        mapCenter,
+        selectedSiret,
+        customCenter,
+        lastTextCity,
+        hasSearched,
+        mobileView
+      };
+      localStorage.setItem("around_me_pro_cache", JSON.stringify(stateToCache));
+    } catch (e) {
+      console.error("Error writing cache:", e);
+    }
+  }, [
+    isLoaded,
+    currentCity,
+    currentRadius,
+    selectedCategoryIds,
+    onlyActive,
+    nafCode,
+    companies,
+    establishments,
+    pagination,
+    perPage,
+    mapCenter,
+    selectedSiret,
+    customCenter,
+    lastTextCity,
+    hasSearched,
+    mobileView
+  ]);
 
   useEffect(() => {
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
@@ -256,9 +344,15 @@ export default function Home() {
 
   const handleSelectEstablishment = (_company: Company, establishment: Etablissement) => {
     setSelectedSiret(establishment.siret);
+    setSelectedEstablishmentForMapSheet(null);
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
       setMobileView("results");
     }
+  };
+
+  const handleLongPressEstablishment = (company: Company, establishment: Etablissement) => {
+    setSelectedSiret(establishment.siret);
+    setSelectedEstablishmentForMapSheet({ company, etab: establishment });
   };
 
   const handleMapClick = (lat: number, lng: number) => {
@@ -266,6 +360,7 @@ export default function Home() {
     setMapCenter([lat, lng]);
     const coordLabel = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
     setCurrentCity(coordLabel);
+    setSelectedEstablishmentForMapSheet(null);
   };
 
   const handleCitySelect = (cityName: string, coordinates: [number, number]) => {
@@ -342,12 +437,110 @@ export default function Home() {
         companies={companies}
         selectedSiret={selectedSiret}
         onSelectEstablishment={handleSelectEstablishment}
+        onLongPressEstablishment={handleLongPressEstablishment}
         onMapClick={handleMapClick}
         customCenter={customCenter}
         theme={theme}
         isVisible={mobileView === "map" || (typeof window !== "undefined" && window.innerWidth >= 1024)}
         isFullscreen={isFullscreenMap}
       />
+
+      {selectedEstablishmentForMapSheet && (
+        <div className="absolute bottom-3.5 left-3.5 right-3.5 z-[1000] p-4 bg-white/95 dark:bg-[#18181b]/95 border border-zinc-200/80 dark:border-zinc-800/80 rounded-xl shadow-xl backdrop-blur-md mobile-details-sheet-active select-none sm:hidden">
+          {/* Header with name and close button */}
+          <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="flex-1 space-y-1">
+              <h4 className="line-clamp-2 text-xs font-black text-zinc-950 dark:text-zinc-50 leading-tight">
+                {getEstablishmentDisplayName(
+                  selectedEstablishmentForMapSheet.company,
+                  selectedEstablishmentForMapSheet.etab
+                )}
+              </h4>
+              <p className="line-clamp-1 text-[10px] text-zinc-400 dark:text-zinc-500">
+                Raison sociale : {selectedEstablishmentForMapSheet.company.nomComplet}
+              </p>
+            </div>
+            
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setSelectedEstablishmentForMapSheet(null)}
+              className="shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
+              aria-label="Fermer les détails"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="h-3.5 w-3.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Badges */}
+          <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
+            {selectedEstablishmentForMapSheet.etab.distance != null && (
+              <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[9px] font-extrabold text-zinc-600 dark:text-zinc-300">
+                {selectedEstablishmentForMapSheet.etab.distance} km
+              </span>
+            )}
+            {getCategoryBySection(selectedEstablishmentForMapSheet.company.secteur) && (
+              <span
+                className="inline-flex max-w-[130px] truncate rounded px-1.5 py-0.5 text-[9px] font-bold border"
+                style={{
+                  backgroundColor: `${getCategoryBySection(selectedEstablishmentForMapSheet.company.secteur)?.color}12`,
+                  borderColor: `${getCategoryBySection(selectedEstablishmentForMapSheet.company.secteur)?.color}30`,
+                  color: getCategoryBySection(selectedEstablishmentForMapSheet.company.secteur)?.color
+                }}
+              >
+                {getCategoryBySection(selectedEstablishmentForMapSheet.company.secteur)?.label}
+              </span>
+            )}
+            <span
+              className={`inline-flex rounded px-1.5 py-0.5 text-[9px] font-bold border ${
+                selectedEstablishmentForMapSheet.etab.statut === "Actif"
+                  ? "border-emerald-200/80 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-400"
+                  : "border-rose-200/80 bg-rose-50 text-rose-700 dark:border-rose-900/50 dark:bg-rose-950/30 dark:text-rose-400"
+              }`}
+            >
+              {selectedEstablishmentForMapSheet.etab.statut === "Actif" ? "Actif" : "Fermé"}
+            </span>
+          </div>
+
+          {/* Address */}
+          <p className="text-[11px] font-semibold text-zinc-800 dark:text-zinc-200 leading-normal mb-3">
+            {formatAddress(selectedEstablishmentForMapSheet.etab)}
+          </p>
+
+          {/* Action buttons */}
+          <div className="grid grid-cols-2 gap-2 border-t border-zinc-100 dark:border-zinc-800/80 pt-3">
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                `${getEstablishmentDisplayName(
+                  selectedEstablishmentForMapSheet.company,
+                  selectedEstablishmentForMapSheet.etab
+                )} ${formatAddress(selectedEstablishmentForMapSheet.etab)}`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[10px] font-extrabold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800/80 transition-all shadow-xs"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="mr-1 h-3 w-3 text-zinc-400 shrink-0">
+                <path fillRule="evenodd" d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 003.051 2.206l.018.008.007.003zM10 13a4 4 0 100-8 4 4 0 000 8z" clipRule="evenodd" />
+              </svg>
+              Itinéraire
+            </a>
+            <a
+              href={annuaireEtablissementUrl(selectedEstablishmentForMapSheet.etab.siret)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-[10px] font-extrabold text-zinc-700 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900/30 dark:text-zinc-300 dark:hover:bg-zinc-800/80 transition-all shadow-xs"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="mr-1 h-3 w-3 text-zinc-400 shrink-0">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clipRule="evenodd" />
+              </svg>
+              Fiche Info
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Floating Fullscreen Toggle Button - Desktop Only */}
       <button
@@ -388,11 +581,21 @@ export default function Home() {
             : "lg:grid lg:grid-cols-12 lg:items-start lg:gap-3 lg:px-6 lg:py-5"
         } ${mobileView === "map" ? "p-0" : "px-4 py-3 sm:px-5 sm:py-4"}`}
       >
-        {/* Mobile: single active panel */}
-        <div className={`flex flex-col lg:hidden ${mobileView === "map" ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))] gap-0 w-full" : "gap-3"}`}>
-          {mobileView === "search" && searchPanel}
-          {mobileView === "results" && resultsPanel}
-          {mobileView === "map" && mapPanel}
+        {/* Mobile: single active panel - preserved in DOM for instant tab switching and state cache */}
+        <div className={`flex flex-col lg:hidden w-full flex-1 min-h-0 ${
+          mobileView === "map" 
+            ? "h-[calc(100dvh-var(--header-height)-var(--tab-bar-height))] gap-0" 
+            : "gap-3"
+        }`}>
+          <div className={mobileView === "search" ? "flex flex-col gap-3 w-full" : "hidden"} id="mobile-tab-search">
+            {searchPanel}
+          </div>
+          <div className={mobileView === "results" ? "flex flex-col gap-3 w-full" : "hidden"} id="mobile-tab-results">
+            {resultsPanel}
+          </div>
+          <div className={`w-full flex-1 min-h-0 ${mobileView === "map" ? "flex flex-col h-full" : "hidden"}`} id="mobile-tab-map">
+            {mapPanel}
+          </div>
         </div>
 
         {/* Desktop: sidebar + map */}

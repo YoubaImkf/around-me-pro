@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet-rotate";
 import { getCategoryBySection } from "@/lib/categories";
 import { formatAddress, getActivityLabel, getEstablishmentDisplayName } from "@/lib/establishments";
 import { Company, Etablissement } from "@/types/company";
@@ -13,6 +14,7 @@ interface MapProps {
   companies: Company[];
   selectedSiret?: string | null;
   onSelectEstablishment?: (company: Company, establishment: Etablissement) => void;
+  onLongPressEstablishment?: (company: Company, establishment: Etablissement) => void;
   onMapClick?: (lat: number, lng: number) => void;
   customCenter?: [number, number] | null;
   theme: "light" | "dark";
@@ -62,6 +64,7 @@ export default function InteractiveMap({
   companies,
   selectedSiret,
   onSelectEstablishment,
+  onLongPressEstablishment,
   onMapClick,
   customCenter,
   theme,
@@ -76,6 +79,8 @@ export default function InteractiveMap({
   const markersMapRef = useRef<Map<string, L.Marker>>(new Map());
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const prevRadiusRef = useRef<number>(0);
+  const [bearing, setBearing] = useState(0);
+  const activeTimersRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
   // Initialize Map
   useEffect(() => {
@@ -88,8 +93,11 @@ export default function InteractiveMap({
       zoomControl: false,
       markerZoomAnimation: false,
       scrollWheelZoom: false,
-      doubleClickZoom: false
-    }).setView(center, 12);
+      doubleClickZoom: false,
+      rotate: true,
+      touchRotate: true,
+      rotateControl: false
+    } as any).setView(center, 12);
 
     const isMobile = window.matchMedia("(max-width: 1023px)").matches;
     L.control.zoom({ position: isMobile ? "bottomleft" : "bottomright" }).addTo(map);
@@ -101,6 +109,12 @@ export default function InteractiveMap({
     map.on("dblclick", (e: L.LeafletMouseEvent) => {
       if (onMapClick) {
         onMapClick(e.latlng.lat, e.latlng.lng);
+      }
+    });
+
+    map.on("rotate", () => {
+      if (map.getBearing) {
+        setBearing(map.getBearing());
       }
     });
 
@@ -299,8 +313,44 @@ export default function InteractiveMap({
           offset: [0, -10]
         });
 
+        let pressTimer: NodeJS.Timeout | null = null;
+        let isLongPress = false;
+
+        const startPress = () => {
+          isLongPress = false;
+          const timer = setTimeout(() => {
+            isLongPress = true;
+            activeTimersRef.current.delete(timer);
+            if (onLongPressEstablishment) {
+              onLongPressEstablishment(company, etab);
+            }
+          }, 500); // 500ms prolonged click threshold
+          pressTimer = timer;
+          activeTimersRef.current.add(timer);
+        };
+
+        const cancelPress = () => {
+          if (pressTimer) {
+            clearTimeout(pressTimer);
+            activeTimersRef.current.delete(pressTimer);
+            pressTimer = null;
+          }
+        };
+
+        marker.on("mousedown", startPress);
+        marker.on("touchstart", startPress);
+
+        marker.on("mouseup", cancelPress);
+        marker.on("mouseleave", cancelPress);
+        marker.on("touchend", cancelPress);
+        marker.on("touchmove", cancelPress);
+
         // Click marker interaction
         marker.on("click", () => {
+          if (isLongPress) {
+            isLongPress = false;
+            return;
+          }
           marker.openPopup();
           if (onSelectEstablishment) {
             onSelectEstablishment(company, etab);
@@ -308,7 +358,13 @@ export default function InteractiveMap({
         });
       });
     });
-  }, [mapInstance, companies.length, onSelectEstablishment, selectedSiret]);
+
+    return () => {
+      // Clear any pending long press timers to avoid background race conditions
+      activeTimersRef.current.forEach((t) => clearTimeout(t));
+      activeTimersRef.current.clear();
+    };
+  }, [mapInstance, companies.length, onSelectEstablishment, onLongPressEstablishment, selectedSiret]);
 
   // Handle selectedSiret changes (highlight and center on selected marker)
   useEffect(() => {
@@ -372,6 +428,33 @@ export default function InteractiveMap({
       <p className="pointer-events-none absolute bottom-3 right-3 z-10 max-w-[10rem] rounded-md bg-white/90 px-2 py-1 text-center text-[9px] font-medium leading-tight text-zinc-500 backdrop-blur-sm dark:bg-zinc-900/80 dark:text-zinc-400 lg:hidden">
         Double-touchez pour cibler une zone
       </p>
+
+      {/* Custom Compass Reset Button */}
+      {mapInstance && Math.abs(bearing) > 0.1 && (
+        <button
+          type="button"
+          onClick={() => {
+            if (mapInstance && (mapInstance as any).setBearing) {
+              (mapInstance as any).setBearing(0);
+              setBearing(0);
+            }
+          }}
+          className="absolute z-10 bottom-[96px] left-[12px] h-[36px] w-[36px] flex items-center justify-center rounded-lg bg-white border border-zinc-200/50 dark:bg-[#18181b] dark:border-zinc-800 shadow-md hover:bg-zinc-50 dark:hover:bg-zinc-800 active:scale-95 transition-all text-zinc-700 dark:text-zinc-300 pointer-events-auto cursor-pointer"
+          title="Réinitialiser l'orientation au Nord"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            strokeWidth="2.5"
+            stroke="currentColor"
+            className="h-5 w-5 transition-transform duration-200"
+            style={{ transform: `rotate(${-bearing}deg)` }}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18M12 3l-4 4m4-4l4 4" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

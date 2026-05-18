@@ -206,3 +206,42 @@ body > * {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Mobile floating establishment details sheet slide-in animation */
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mobile-details-sheet-active {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom leaflet-rotate styles (e.g. for compass rotation reset button) */
+.leaflet-compass-btn {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-background);
+  color: var(--foreground);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+  transition: all 0.15s ease;
+}
+
+.leaflet-compass-btn:hover {
+  background-color: #f4f4f5;
+}
+
+.dark .leaflet-compass-btn:hover {
+  background-color: #27272a;
+}
+
