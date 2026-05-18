@@ -245,3 +245,35 @@ body > * {
   background-color: #27272a;
 }
 
+/* Optimize map rotation & pinch-zoom performance (GPU hardware acceleration) */
+.leaflet-map-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane,
+.leaflet-overlay-pane,
+.leaflet-layer {
+  will-change: transform;
+  transform-style: preserve-3d !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px;
+}
+
+/* Disable transition animations entirely during active touch gestures to prevent rendering fights */
+.leaflet-container.leaflet-touching .leaflet-zoom-animated,
+.leaflet-container.leaflet-touching .leaflet-map-pane,
+.leaflet-container.leaflet-touching .leaflet-tile,
+.leaflet-container.leaflet-touching .leaflet-tile-container,
+.leaflet-container.leaflet-touching .leaflet-marker-icon,
+.leaflet-container.leaflet-touching .leaflet-marker-shadow,
+.leaflet-container.leaflet-touching .leaflet-pane {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Keep map dragging and pinch gestures highly responsive and prevent touch action delays */
+.leaflet-container.leaflet-touch-zoom {
+  touch-action: none !important;
+}
+

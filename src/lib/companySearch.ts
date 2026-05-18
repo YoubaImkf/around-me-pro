@@ -64,7 +64,7 @@ export function normalizeCompanies(
           if (isNaN(etabLat) || isNaN(etabLon)) return null;
 
           const distance = getHaversineDistance(searchLat, searchLon, etabLat, etabLon);
-          if (distance > radius * 1.05) return null;
+          if (distance > radius * 1.25) return null;
 
           return normalizeEtablissementFromApi(
             etab,

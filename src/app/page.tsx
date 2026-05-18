@@ -319,6 +319,7 @@ export default function Home() {
     categoryIds: string[];
     onlyActive: boolean;
     nafCode: string;
+    coordinates?: [number, number] | null;
   }) => {
     setSelectedCategoryIds(params.categoryIds);
     setOnlyActive(params.onlyActive);
@@ -326,6 +327,9 @@ export default function Home() {
 
     if (params.city.startsWith("📍")) {
       executeSearch(params.city, params.radius, params.categoryIds, 1, customCenter, params.onlyActive, params.nafCode);
+    } else if (params.coordinates) {
+      setCustomCenter(params.coordinates);
+      executeSearch(params.city, params.radius, params.categoryIds, 1, params.coordinates, params.onlyActive, params.nafCode);
     } else {
       setCustomCenter(null);
       executeSearch(params.city, params.radius, params.categoryIds, 1, null, params.onlyActive, params.nafCode);
@@ -342,11 +346,11 @@ export default function Home() {
     executeSearch(currentCity, currentRadius, selectedCategoryIds, 1, customCenter, onlyActive, nafCode, newPerPage);
   };
 
-  const handleSelectEstablishment = (_company: Company, establishment: Etablissement) => {
+  const handleSelectEstablishment = (company: Company, establishment: Etablissement, source: "map" | "list" = "list") => {
     setSelectedSiret(establishment.siret);
-    setSelectedEstablishmentForMapSheet(null);
-    if (typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
-      setMobileView("results");
+    setSelectedEstablishmentForMapSheet({ company, etab: establishment });
+    if (source === "list" && typeof window !== "undefined" && window.matchMedia("(max-width: 1023px)").matches) {
+      setMobileView("map");
     }
   };
 

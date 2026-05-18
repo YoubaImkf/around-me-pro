@@ -13,7 +13,7 @@ interface MapProps {
   radius: number; // in kilometers
   companies: Company[];
   selectedSiret?: string | null;
-  onSelectEstablishment?: (company: Company, establishment: Etablissement) => void;
+  onSelectEstablishment?: (company: Company, establishment: Etablissement, source?: "map" | "list") => void;
   onLongPressEstablishment?: (company: Company, establishment: Etablissement) => void;
   onMapClick?: (lat: number, lng: number) => void;
   customCenter?: [number, number] | null;
@@ -353,7 +353,7 @@ export default function InteractiveMap({
           }
           marker.openPopup();
           if (onSelectEstablishment) {
-            onSelectEstablishment(company, etab);
+            onSelectEstablishment(company, etab, "map");
           }
         });
       });

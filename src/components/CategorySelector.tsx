@@ -32,7 +32,7 @@ export default function CategorySelector({
 
   // Close dropdown on click outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (
         containerRef.current &&
         !containerRef.current.contains(event.target as Node)
@@ -41,7 +41,11 @@ export default function CategorySelector({
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
   }, []);
 
   // Keyboard navigation handler for accessibility
@@ -219,72 +223,90 @@ export default function CategorySelector({
       {isOpen && filteredCategories.length > 0 && (
         <div
           ref={dropdownRef}
-          id={listboxId}
-          role="listbox"
-          aria-label="Secteurs d'activité suggérés"
-          className="absolute z-30 w-full mt-1 max-h-60 overflow-y-auto bg-white border border-zinc-200/50 rounded-lg shadow-md dark:bg-[#272729] dark:border-zinc-800"
+          className="absolute z-30 w-full mt-1 bg-white border border-zinc-200/50 rounded-xl shadow-lg dark:bg-[#272729] dark:border-zinc-800 flex flex-col overflow-hidden"
         >
-          {filteredCategories.map((cat, index) => {
-            const isSelected = selectedCategoryIds.includes(cat.id);
-            const isFocused = index === focusedIndex;
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-label="Secteurs d'activité suggérés"
+            className="overflow-y-auto max-h-48 flex-1"
+          >
+            {filteredCategories.map((cat, index) => {
+              const isSelected = selectedCategoryIds.includes(cat.id);
+              const isFocused = index === focusedIndex;
 
-            return (
-              <div
-                key={cat.id}
-                role="option"
-                id={`option-${cat.id}`}
-                aria-selected={isSelected}
-                data-index={index}
-                onClick={() => handleToggleCategory(cat.id)}
-                onMouseEnter={() => setFocusedIndex(index)}
-                className={`flex min-h-11 cursor-pointer select-none items-start gap-3 border-b border-zinc-100 px-3 py-3 transition-colors last:border-0 dark:border-zinc-900/40 ${
-                  isFocused
-                    ? "bg-zinc-50 dark:bg-zinc-900/50"
-                    : ""
-                }`}
-              >
-                {/* Checked indicator */}
+              return (
                 <div
-                  className={`mt-0.5 w-3.5 h-3.5 flex items-center justify-center rounded border transition-all ${
-                    isSelected
-                      ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950"
-                      : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#1a1a1c]"
+                  key={cat.id}
+                  role="option"
+                  id={`option-${cat.id}`}
+                  aria-selected={isSelected}
+                  data-index={index}
+                  onClick={() => handleToggleCategory(cat.id)}
+                  onMouseEnter={() => setFocusedIndex(index)}
+                  className={`flex min-h-11 cursor-pointer select-none items-start gap-3 border-b border-zinc-100 px-3 py-3 transition-colors last:border-0 dark:border-zinc-900/40 ${
+                    isFocused
+                      ? "bg-zinc-50 dark:bg-zinc-900/50"
+                      : ""
                   }`}
                 >
-                  {isSelected && (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      className="w-2.5 h-2.5 stroke-2"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                      {cat.label}
-                    </span>
-                    <span
-                      className="w-1.5 h-1.5 rounded-full"
-                      style={{ backgroundColor: cat.color }}
-                      aria-hidden="true"
-                    />
+                  {/* Checked indicator */}
+                  <div
+                    className={`mt-0.5 w-3.5 h-3.5 flex items-center justify-center rounded border transition-all ${
+                      isSelected
+                        ? "bg-zinc-950 border-zinc-950 text-white dark:bg-zinc-100 dark:border-zinc-100 dark:text-zinc-950"
+                        : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#1a1a1c]"
+                    }`}
+                  >
+                    {isSelected && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        className="w-2.5 h-2.5 stroke-2"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    )}
                   </div>
-                  <p className="text-[10px] text-zinc-400 truncate dark:text-zinc-500 mt-0.5">
-                    {cat.description}
-                  </p>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                        {cat.label}
+                      </span>
+                      <span
+                        className="w-1.5 h-1.5 rounded-full"
+                        style={{ backgroundColor: cat.color }}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="text-[10px] text-zinc-400 truncate dark:text-zinc-500 mt-0.5">
+                      {cat.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
+
+          {/* Sticky selection summary and dismissal bar */}
+          <div className="flex items-center justify-between border-t border-zinc-100 bg-zinc-50/90 px-3.5 py-2.5 dark:border-zinc-800/80 dark:bg-[#1e1e20]/90 backdrop-blur-xs select-none">
+            <span className="text-[10px] font-extrabold text-zinc-500 dark:text-zinc-400">
+              {selectedCategoryIds.length} sélectionné{selectedCategoryIds.length > 1 ? "s" : ""}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              className="cursor-pointer rounded-lg bg-zinc-950 px-3.5 py-1.5 text-[10px] font-black text-white hover:bg-zinc-800 dark:bg-zinc-50 dark:text-zinc-950 dark:hover:bg-zinc-200 transition-colors shadow-xs"
+            >
+              Terminer
+            </button>
+          </div>
         </div>
       )}
 

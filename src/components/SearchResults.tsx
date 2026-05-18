@@ -31,7 +31,7 @@ interface SearchResultsProps {
   loading: boolean;
   error: string | null;
   selectedSiret: string | null;
-  onSelectEstablishment: (company: Company, establishment: Etablissement) => void;
+  onSelectEstablishment: (company: Company, establishment: Etablissement, source?: "map" | "list") => void;
   pagination: SearchPagination;
   onPageChange: (newPage: number) => void;
   onPerPageChange: (perPage: PageSizeOption) => void;
@@ -342,7 +342,7 @@ export default function SearchResults({
             <li key={etab.siret}>
               <article
                 id={`etab-card-${etab.siret}`}
-                onClick={() => onSelectEstablishment(company, etab)}
+                onClick={() => onSelectEstablishment(company, etab, "list")}
                 className={`cursor-pointer rounded-xl border p-4 transition-colors sm:p-5 ${
                   isSelected
                     ? "border-zinc-900 bg-zinc-50/80 ring-1 ring-zinc-900/10 dark:border-zinc-200 dark:bg-[#27272a] dark:ring-1 dark:ring-zinc-100/10"

@@ -11,7 +11,7 @@ interface SearchFormProps {
   radius: number;
   onlyActive: boolean;
   initialNafCode?: string;
-  onSearch: (params: { city: string; radius: number; categoryIds: string[]; onlyActive: boolean; nafCode: string }) => void;
+  onSearch: (params: { city: string; radius: number; categoryIds: string[]; onlyActive: boolean; nafCode: string; coordinates?: [number, number] | null }) => void;
   loading: boolean;
   selectedCategoryIds: string[];
   setSelectedCategoryIds: (ids: string[]) => void;
@@ -72,6 +72,7 @@ export default function SearchForm({
   onCitySelect
 }: SearchFormProps) {
   const [cityInput, setCityInput] = useState("");
+  const [selectedCoords, setSelectedCoords] = useState<[number, number] | null>(null);
   const [radiusState, setRadiusState] = useState(10);
   const [radiusInputString, setRadiusInputString] = useState("10");
   const [onlyActiveState, setOnlyActiveState] = useState(true);
@@ -82,6 +83,18 @@ export default function SearchForm({
   // Sync cityInput when city prop changes from map click or initial search
   useEffect(() => {
     setCityInput(city);
+    if (city.startsWith("📍")) {
+      const parts = city.replace("📍", "").split(",");
+      if (parts.length === 2) {
+        const lat = parseFloat(parts[0]);
+        const lng = parseFloat(parts[1]);
+        if (!isNaN(lat) && !isNaN(lng)) {
+          setSelectedCoords([lat, lng]);
+          return;
+        }
+      }
+    }
+    setSelectedCoords(null);
   }, [city]);
 
   // Sync radiusState when radius prop changes externally
@@ -263,9 +276,12 @@ export default function SearchForm({
     
     if (suggestion.coordinates) {
       const [lng, lat] = suggestion.coordinates;
+      setSelectedCoords([lat, lng]);
       if (onCitySelect) {
         onCitySelect(suggestion.label, [lat, lng]);
       }
+    } else {
+      setSelectedCoords(null);
     }
   };
 
@@ -283,7 +299,8 @@ export default function SearchForm({
       radius: radiusState,
       categoryIds: selectedCategoryIds,
       onlyActive: onlyActiveState,
-      nafCode: nafCodeState
+      nafCode: nafCodeState,
+      coordinates: selectedCoords
     });
   };
 
@@ -310,6 +327,7 @@ export default function SearchForm({
             value={cityInput}
             onChange={(e) => {
               setCityInput(e.target.value);
+              setSelectedCoords(null);
               setIsCityDropdownOpen(true);
               setCityFocusedIndex(-1);
             }}
