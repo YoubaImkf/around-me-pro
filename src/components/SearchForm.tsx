@@ -214,17 +214,24 @@ export default function SearchForm({
   useEffect(() => {
     const trimmedJob = jobTitle.trim();
     if (trimmedJob.length < 2) {
-      setSemanticSuggestions([]);
-      return;
+      const timer = setTimeout(() => {
+        setSemanticSuggestions([]);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
+    let active = true;
     const inferSectors = async () => {
-      // Execute local semantic search implementation (easily swappable for LLM endpoint)
       const suggestions = await semanticSuggester.suggestCategories(trimmedJob);
-      setSemanticSuggestions(suggestions);
+      if (active) {
+        setSemanticSuggestions(suggestions);
+      }
     };
 
     inferSectors();
+    return () => {
+      active = false;
+    };
   }, [jobTitle]);
 
   const handleCityKeyDown = (e: React.KeyboardEvent) => {
@@ -256,7 +263,7 @@ export default function SearchForm({
           handleSelectCity(citySuggestions[cityFocusedIndex]);
         } else {
           // If no suggestion focused, just submit form
-          handleSubmit(e as any);
+          handleSubmit(e as unknown as React.FormEvent);
         }
         break;
       case "Escape":
@@ -282,12 +289,6 @@ export default function SearchForm({
       }
     } else {
       setSelectedCoords(null);
-    }
-  };
-
-  const handleApplySemanticCategory = (catId: string) => {
-    if (!selectedCategoryIds.includes(catId)) {
-      setSelectedCategoryIds([...selectedCategoryIds, catId]);
     }
   };
 
